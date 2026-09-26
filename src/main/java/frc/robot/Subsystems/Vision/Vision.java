@@ -1,12 +1,18 @@
 package frc.robot.Subsystems.Vision;
 
+import static edu.wpi.first.units.Units.Degree;
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Radians;
 import static frc.robot.Constant.Constants.VisionConstants.*;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
@@ -14,6 +20,8 @@ import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constant.FieldConstants;
 import frc.robot.Robotstate;
+import frc.robot.Config.BruinRobotConfig;
+import frc.robot.Subsystems.Drive.SwerveSubsystem;
 import frc.robot.Subsystems.Vision.VisionIO.PoseObservation;
 import java.util.LinkedList;
 import java.util.List;
@@ -22,6 +30,15 @@ import org.littletonrobotics.junction.Logger;
 public class Vision extends SubsystemBase {
   // consumer for our vision data, how all data leaves the subsystem
   private final VisionConsumer consumer;
+  private final SwerveModulePosition[] positions;
+  // combining drive data and vision data into on singular place
+  private final SwerveSubsystem drive;
+  private final SwerveDrivePoseEstimator swerveDrivePoseEstimator;
+  private final SwerveDriveKinematics kinematics;
+
+  private final Pose2d currentPosition;
+
+
 
   // array of VisionIO interfaces for the amount of cameras that we have, can be defined as real or
   // sim later
@@ -40,10 +57,28 @@ public class Vision extends SubsystemBase {
    *     functional interface
    * @param io instances of VisionIO or classes implementing VisionIO
    */
-  public Vision(VisionConsumer consumer, VisionIO... io) {
+  public Vision(SwerveSubsystem drive, BruinRobotConfig config, VisionIO... io) {
     // Initialize io and the consumer
-    this.consumer = consumer;
     this.io = io;
+
+    this.drive = drive;
+
+    this.kinematics = 
+    new SwerveDriveKinematics(config.getModuleTranslations()[0],
+                                config.getModuleTranslations()[1], 
+                                config.getModuleTranslations()[2], 
+                                config.getModuleTranslations()[3] );
+
+    currentPosition = new Pose2d(0,0, new Rotation2d(Radians.of(0.0)));
+
+    positions = new SwerveModulePosition[]{
+      new SwerveModulePosition(),
+      new SwerveModulePosition(),
+      new SwerveModulePosition(),
+      new SwerveModulePosition()
+    };
+
+    this.swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(kinematics, drive.getSwerveRotation(), positions , currentPosition);
 
     // Initialize inputs
     this.inputs = new VisionIOInputsAutoLogged[io.length];
@@ -71,6 +106,11 @@ public class Vision extends SubsystemBase {
 
   @Override
   public void periodic() {
+
+    swerveDrivePoseEstimator.update(drive.getSwerveRotation(), positions);
+
+
+
     /** update auto logged inputs for every module */
     for (int i = 0; i < io.length; i++) {
       io[i].updateInputs(inputs[i]);
@@ -144,7 +184,7 @@ public class Vision extends SubsystemBase {
         double linearSpeed =
             Math.sqrt(
                 Math.pow(Robotstate.getInstance().getRobotChassisSpeeds().vxMetersPerSecond, 2.0)
-                    * Math.pow(
+                    + Math.pow(
                         Robotstate.getInstance().getRobotChassisSpeeds().vyMetersPerSecond, 2.0));
         if (linearSpeed > 2.0) {
           stdDevFactor *=
@@ -154,10 +194,13 @@ public class Vision extends SubsystemBase {
         double angularStdDev = angularStdDevBaseline * stdDevFactor;
 
         // Send vision observation
-        consumer.accept(
-            observation.pose().toPose2d(),
-            observation.timestamp(),
-            VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
+        swerveDrivePoseEstimator.addVisionMeasurement(
+    observation.pose().toPose2d(),
+    observation.timestamp(),
+    VecBuilder.fill(
+        linearStdDev,
+        linearStdDev,
+        angularStdDev));
       }
       // Log camera datadata
       Logger.recordOutput(
@@ -176,6 +219,10 @@ public class Vision extends SubsystemBase {
       allRobotPoses.addAll(robotPoses);
       allRobotPosesAccepted.addAll(robotPosesAccepted);
       allRobotPosesRejected.addAll(robotPosesRejected);
+
+      currentPosition = swerveDrivePoseEstimator.getEstimatedPosition();
+
+      
     }
     // Log summary data
     Logger.recordOutput(
@@ -206,6 +253,11 @@ public class Vision extends SubsystemBase {
       }
     }
     return true;
+  }
+
+  // TODO: should this be static?!!!
+  public Pose2d getLocation(){
+    return currentPosition;
   }
 
   // only consumer is the questnav currently, but keep this information incase we need to plug

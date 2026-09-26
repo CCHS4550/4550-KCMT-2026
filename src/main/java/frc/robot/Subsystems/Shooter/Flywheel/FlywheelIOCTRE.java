@@ -23,6 +23,7 @@ public class FlywheelIOCTRE implements FlywheelIO {
   private TalonFX flywheelMotor1;
   private TalonFX flywheelMotor2;
   private TalonFX flywheelMotor3;
+  private TalonFX flywheelMotor4;
 
   private MotionMagicVelocityVoltage flywheelControl;
 
@@ -43,6 +44,11 @@ public class FlywheelIOCTRE implements FlywheelIO {
   private final StatusSignal<Current> flywheel3StatorCurrent;
   private final StatusSignal<Temperature> flywheel3Temperature;
 
+  private final StatusSignal<Voltage> flywheel4AppliedVoltage;
+  private final StatusSignal<Current> flywheel4SupplyCurrent;
+  private final StatusSignal<Current> flywheel4StatorCurrent;
+  private final StatusSignal<Temperature> flywheel4Temperature;
+
   private final StatusSignal<AngularVelocity> flywheelVelocityRotationsPerSec;
   private final StatusSignal<AngularAcceleration> flywheelAccelerationRotationsPerSecSquared;
 
@@ -53,6 +59,8 @@ public class FlywheelIOCTRE implements FlywheelIO {
         new TalonFX(config.FLYWHEEL_MOTOR_2.getDeviceNumber(), config.FLYWHEEL_MOTOR_2.getBus());
     flywheelMotor3 =
         new TalonFX(config.FLYWHEEL_MOTOR_3.getDeviceNumber(), config.FLYWHEEL_MOTOR_3.getBus());
+    flywheelMotor4 =
+        new TalonFX(config.FLYWHEEL_MOTOR_4.getDeviceNumber(), config.FLYWHEEL_MOTOR_4.getBus());
 
     Follower follower =
         new Follower(config.FLYWHEEL_MOTOR_1.getDeviceNumber(), MotorAlignmentValue.Aligned);
@@ -82,6 +90,7 @@ public class FlywheelIOCTRE implements FlywheelIO {
 
     flywheelMotor2.setControl(follower);
     flywheelMotor3.setControl(follower);
+    flywheelMotor4.setControl(follower);
 
     flywheel1AppliedVoltage = flywheelMotor1.getMotorVoltage();
     flywheel1StatorCurrent = flywheelMotor1.getStatorCurrent();
@@ -97,6 +106,11 @@ public class FlywheelIOCTRE implements FlywheelIO {
     flywheel3StatorCurrent = flywheelMotor3.getStatorCurrent();
     flywheel3SupplyCurrent = flywheelMotor3.getSupplyCurrent();
     flywheel3Temperature = flywheelMotor3.getDeviceTemp();
+
+    flywheel4AppliedVoltage = flywheelMotor4.getMotorVoltage();
+    flywheel4StatorCurrent = flywheelMotor4.getStatorCurrent();
+    flywheel4SupplyCurrent = flywheelMotor4.getSupplyCurrent();
+    flywheel4Temperature = flywheelMotor4.getDeviceTemp();
 
     flywheelVelocityRotationsPerSec = flywheelMotor1.getVelocity();
     flywheelAccelerationRotationsPerSecSquared = flywheelMotor1.getAcceleration();
@@ -117,6 +131,10 @@ public class FlywheelIOCTRE implements FlywheelIO {
         flywheel3StatorCurrent,
         flywheel3SupplyCurrent,
         flywheel3Temperature,
+        flywheel4AppliedVoltage,
+        flywheel4StatorCurrent,
+        flywheel4SupplyCurrent,
+        flywheel4Temperature,
         flywheelVelocityRotationsPerSec,
         flywheelAccelerationRotationsPerSecSquared);
 

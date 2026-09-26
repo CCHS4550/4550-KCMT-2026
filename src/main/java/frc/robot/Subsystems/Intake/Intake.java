@@ -1,6 +1,7 @@
 package frc.robot.Subsystems.Intake;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constant.Constants;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -11,27 +12,26 @@ public class Intake extends SubsystemBase {
   private final double intakeTolerance = 0.2;
 
   public enum WantedIntakeState {
-    EXTENDED_INTAKING,
-    EXTENDED_PASSIVE,
+    IDLE,
     STOWED,
-    PUMPING,
-    BALL_STUFFING,
-    IDLE
+    INTAKE,
+    PUMPING
   }
 
   public enum SystemState {
-    EXTENDED_INTAKING,
-    EXTENDED_PASSIVE,
+    IDLE,
     STOWED,
-    STOW_SLOW,
-    UPPER_PUMP,
-    LOWER_PUMP,
-    IDLE
+    INTAKE,
+    PUMP_UP,
+    PUMP_DOWN
   }
 
   private SystemState systemState = SystemState.STOWED;
   private WantedIntakeState wantedState = WantedIntakeState.STOWED;
   private final IntakeIO intakeIO;
+
+  private Rotation2d desiredIntakeAngle = new Rotation2d(0);
+
 
   private IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
 
@@ -41,34 +41,23 @@ public class Intake extends SubsystemBase {
 
   private void applyStates() {
     switch (systemState) {
-      case EXTENDED_INTAKING:
-        intakeIO.setSpinnerVoltage(5.0);
-        intakeIO.setExtensionMotorPositionRad(
-            Constants.IntakeConstants.INTAKE_BOTTOM_RADS, 100, 50);
-        break;
-      case EXTENDED_PASSIVE:
-        intakeIO.setExtensionVoltage(0.0);
-        intakeIO.setExtensionMotorPositionRad(
-            Constants.IntakeConstants.INTAKE_BOTTOM_RADS, 100, 50);
-        break;
       case STOWED:
         intakeIO.setExtensionVoltage(0.0);
         intakeIO.setExtensionMotorPositionRad(
             Constants.IntakeConstants.INTAKE_STOWED_RADS, 100, 50);
         break;
-      case STOW_SLOW:
+      case IDLE:
         intakeIO.setExtensionVoltage(0.0);
-        intakeIO.setExtensionMotorPositionRad(Constants.IntakeConstants.INTAKE_STOWED_RADS, 30, 25);
-      case UPPER_PUMP:
-        intakeIO.setExtensionVoltage(0.0);
-        intakeIO.setExtensionMotorPositionRad(
-            Constants.IntakeConstants.INTAKE_TOP_PUMP_RADS, 30, 25);
-        break;
-      case LOWER_PUMP:
-        intakeIO.setExtensionVoltage(0.0);
-        intakeIO.setExtensionMotorPositionRad(
-            Constants.IntakeConstants.INTAKE_BOTTOM_PUMP_RADS, 30, 25);
-        break;
+        intakeIO.setSpinnerVoltage(0.0);
+      case INTAKE:
+        intakeIO.setSpinnerVoltage(5.0);
+        intakeIO.setExtensionMotorPositionRad(Constants.IntakeConstants.INTAKE_BOTTOM_RADS, 100, 50);
+      case PUMP_DOWN:
+        intakeIO.setSpinnerVoltage(5.0);
+        intakeIO.setExtensionMotorPositionRad(Constants.IntakeConstants.INTAKE_BOTTOM_PUMP_RADS, 100, 50);
+      case PUMP_UP:
+        intakeIO.setSpinnerVoltage(5.0);
+        intakeIO.setExtensionMotorPositionRad(Constants.IntakeConstants.INTAKE_TOP_PUMP_RADS, 100, 50);
       default:
         intakeIO.setExtensionVoltage(0.0);
         intakeIO.setSpinnerVoltage(0.0);
@@ -78,24 +67,15 @@ public class Intake extends SubsystemBase {
 
   private SystemState handleStateTransitions() {
     switch (wantedState) {
-      case EXTENDED_INTAKING:
-        return SystemState.EXTENDED_INTAKING;
-      case EXTENDED_PASSIVE:
-        return SystemState.EXTENDED_PASSIVE;
       case STOWED:
         return SystemState.STOWED;
-      case BALL_STUFFING:
-        return SystemState.STOW_SLOW;
       case PUMPING:
-        if (systemState == SystemState.UPPER_PUMP) {
-          return atWantedAngle() ? SystemState.LOWER_PUMP : SystemState.UPPER_PUMP;
-        } else if (systemState == SystemState.LOWER_PUMP) {
-          return atWantedAngle() ? SystemState.UPPER_PUMP : SystemState.LOWER_PUMP;
-        } else {
-          return SystemState.LOWER_PUMP;
-        }
+        return SystemState.PUMP_DOWN;
       case IDLE:
         return SystemState.IDLE;
+      case INTAKE:
+        return SystemState.INTAKE;
+      
       default:
         return SystemState.IDLE;
     }
@@ -110,33 +90,24 @@ public class Intake extends SubsystemBase {
   }
 
   @AutoLogOutput(key = "Subsystems/Intake/AtWantedAngle")
-  public boolean atWantedAngle() {
+  public void atWantedAngle() {
     switch (systemState) {
-      case EXTENDED_INTAKING:
-        return MathUtil.isNear(
+      case PUMP_DOWN:
+         if( MathUtil.isNear(
             Constants.IntakeConstants.INTAKE_BOTTOM_RADS,
             inputs.extensionPosRadians,
-            intakeTolerance);
-      case EXTENDED_PASSIVE:
-        return MathUtil.isNear(
-            Constants.IntakeConstants.INTAKE_BOTTOM_RADS,
-            inputs.extensionPosRadians,
-            intakeTolerance);
-      case STOWED:
-        return MathUtil.isNear(
-            Constants.IntakeConstants.INTAKE_BOTTOM_RADS,
-            inputs.extensionPosRadians,
-            intakeTolerance);
-      case UPPER_PUMP:
-        return MathUtil.isNear(
+            intakeTolerance)){
+              setWantedIntakeState(SystemState.PUMP_UP);
+            }
+      case PUMP_UP:
+         if( MathUtil.isNear(
             Constants.IntakeConstants.INTAKE_TOP_PUMP_RADS,
             inputs.extensionPosRadians,
-            intakeTolerance);
-      case LOWER_PUMP:
-        return MathUtil.isNear(
-            Constants.IntakeConstants.INTAKE_BOTTOM_PUMP_RADS,
-            inputs.extensionPosRadians,
-            intakeTolerance);
+            intakeTolerance)){
+              setWantedIntakeState()
+              .PUMP_DOWN);
+            }
+
       case IDLE:
         return true;
       default:
@@ -151,6 +122,7 @@ public class Intake extends SubsystemBase {
     Logger.recordOutput("Subsystems/Intake/SystemState", systemState);
     Logger.recordOutput("Subsystems/Intake/DesiredState", wantedState);
     systemState = handleStateTransitions();
+    
     applyStates();
   }
 }
