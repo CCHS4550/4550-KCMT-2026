@@ -15,6 +15,7 @@ import frc.robot.Subsystems.Intake.Intake.WantedIntakeState;
 import frc.robot.Subsystems.Shooter.Shooter;
 import frc.robot.Subsystems.Shooter.Shooter.ShooterSystemState;
 import frc.robot.Subsystems.Shooter.Shooter.ShooterWantedState;
+import frc.robot.Subsystems.Vision.Vision;
 import frc.robot.Util.LaunchCalculator;
 import frc.robot.Util.ShooterMeasurables;
 import org.littletonrobotics.junction.AutoLogOutput;
@@ -24,6 +25,7 @@ public class Superstructure extends SubsystemBase {
   private final Intake intake;
   private final Shooter shooter;
   private final Indexer indexer;
+  private final Vision vision;
 
   @AutoLogOutput private WantedSuperstructureState wantedState1 = WantedSuperstructureState.IDLE;
   @AutoLogOutput private SystemState systemState = SystemState.IDLE;
@@ -32,11 +34,12 @@ public class Superstructure extends SubsystemBase {
       new ShooterMeasurables(false, new Rotation2d(), 0, 0, 0, 0, 0, 0, 0, false);
 
   public Superstructure(
-      SwerveSubsystem swerveSubsystem, Intake intake, Shooter shooter, Indexer indexer) {
+      SwerveSubsystem swerveSubsystem, Intake intake, Shooter shooter, Indexer indexer, Vision vision) {
     this.swerveSubsystem = swerveSubsystem;
     this.intake = intake;
     this.indexer = indexer;
     this.shooter = shooter;
+    this.vision = vision;
   }
 
   @Override
@@ -44,7 +47,7 @@ public class Superstructure extends SubsystemBase {
     // Log launching parameters TODO: fix logging bugs later
     var launchCalculator = LaunchCalculator.getInstance();
 
-    shooterCalcs = launchCalculator.getParameters();
+    shooterCalcs = launchCalculator.getParameters(vision);
     shooter.setShooterMeasurables(shooterCalcs);
 
     systemState = handleStateTransitions();
@@ -100,40 +103,29 @@ public class Superstructure extends SubsystemBase {
         shooter.setWantedState(ShooterWantedState.ZERO);
         break;
       case EXTEND_INTAKE:
-        intake.setWantedIntakeState(WantedIntakeState.EXTENDED_PASSIVE);
+        intake.setWantedIntakeState(WantedIntakeState.INTAKE);
         indexer.setWantedState(IndexerWantedState.IDLE);
         if (shooter.getSystemState() != ShooterSystemState.ZERO) {
           shooter.setWantedState(ShooterWantedState.IDLE);
         }
         break;
       case INTAKING:
-        intake.setWantedIntakeState(WantedIntakeState.EXTENDED_INTAKING);
+        intake.setWantedIntakeState(WantedIntakeState.INTAKE);
         indexer.setWantedState(IndexerWantedState.IDLE);
         if (shooter.getSystemState() != ShooterSystemState.ZERO) {
           shooter.setWantedState(ShooterWantedState.IDLE);
         }
         break;
-      case INTAKING_PRE_AIM:
-        intake.setWantedIntakeState(WantedIntakeState.EXTENDED_INTAKING);
-        indexer.setWantedState(IndexerWantedState.IDLE);
-        shooter.setWantedState(ShooterWantedState.ACTIVE_SHOOT);
-        break;
-      case PASSIVE_PRE_AIM:
-        intake.setWantedIntakeState(WantedIntakeState.EXTENDED_PASSIVE);
-        indexer.setWantedState(IndexerWantedState.IDLE);
-        shooter.setWantedState(ShooterWantedState.ACTIVE_SHOOT);
-        break;
-      case AIMING:
-        swerveSubsystem.setTargetRotation(shooterCalcs.getDriveAngle());
-        intake.setWantedIntakeState(WantedIntakeState.EXTENDED_PASSIVE);
-        indexer.setWantedState(IndexerWantedState.IDLE);
-        shooter.setWantedState(ShooterWantedState.ACTIVE_SHOOT);
-        break;
+      
       case SHOOT:
         swerveSubsystem.setTargetRotation(shooterCalcs.getDriveAngle());
-        intake.setWantedIntakeState(WantedIntakeState.EXTENDED_PASSIVE);
-        indexer.setWantedState(IndexerWantedState.RUNNING);
+        intake.setWantedIntakeState(WantedIntakeState.PUMPING);
+        
         shooter.setWantedState(ShooterWantedState.ACTIVE_SHOOT);
+
+        if (shooter.atSetpoint()){
+          indexer.setWantedState(IndexerWantedState.RUNNING);
+        }
         break;
     }
   }

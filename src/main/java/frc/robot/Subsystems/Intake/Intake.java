@@ -69,13 +69,17 @@ public class Intake extends SubsystemBase {
     switch (wantedState) {
       case STOWED:
         return SystemState.STOWED;
-      case PUMPING:
-        return SystemState.PUMP_DOWN;
       case IDLE:
         return SystemState.IDLE;
       case INTAKE:
         return SystemState.INTAKE;
-      
+      case PUMPING:
+        // If we are coming from outside into PUMPING, start with PUMP_DOWN.
+        // Otherwise, keep whatever internal pump state we are currently executing.
+        if (systemState != SystemState.PUMP_DOWN && systemState != SystemState.PUMP_UP) {
+          return SystemState.PUMP_DOWN;
+        }
+        return systemState; 
       default:
         return SystemState.IDLE;
     }
@@ -90,30 +94,32 @@ public class Intake extends SubsystemBase {
   }
 
   @AutoLogOutput(key = "Subsystems/Intake/AtWantedAngle")
-  public void atWantedAngle() {
-    switch (systemState) {
-      case PUMP_DOWN:
-         if( MathUtil.isNear(
-            Constants.IntakeConstants.INTAKE_BOTTOM_RADS,
-            inputs.extensionPosRadians,
-            intakeTolerance)){
-              setWantedIntakeState(SystemState.PUMP_UP);
-            }
-      case PUMP_UP:
-         if( MathUtil.isNear(
-            Constants.IntakeConstants.INTAKE_TOP_PUMP_RADS,
-            inputs.extensionPosRadians,
-            intakeTolerance)){
-              setWantedIntakeState()
-              .PUMP_DOWN);
-            }
+ private void updatePumpingStateMachine() {
+    // Only run this logic if the user actually wants to pump
+    if (wantedState != WantedIntakeState.PUMPING) {
+      return;
+    }
 
-      case IDLE:
-        return true;
-      default:
-        return true;
+    // Check if we reached the bottom, then switch to going up
+    if (systemState == SystemState.PUMP_DOWN) {
+      if (MathUtil.isNear(
+          Constants.IntakeConstants.INTAKE_BOTTOM_PUMP_RADS,
+          inputs.extensionPosRadians,
+          intakeTolerance)) {
+        systemState = SystemState.PUMP_UP;
+      }
+    }
+    // Check if we reached the top, then switch back to going down
+    else if (systemState == SystemState.PUMP_UP) {
+      if (MathUtil.isNear(
+          Constants.IntakeConstants.INTAKE_TOP_PUMP_RADS,
+          inputs.extensionPosRadians,
+          intakeTolerance)) {
+        systemState = SystemState.PUMP_DOWN;
+      }
     }
   }
+  
 
   @Override
   public void periodic() {
@@ -122,6 +128,8 @@ public class Intake extends SubsystemBase {
     Logger.recordOutput("Subsystems/Intake/SystemState", systemState);
     Logger.recordOutput("Subsystems/Intake/DesiredState", wantedState);
     systemState = handleStateTransitions();
+
+    updatePumpingStateMachine();
     
     applyStates();
   }

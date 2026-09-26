@@ -27,6 +27,8 @@ import frc.robot.Constant.FieldConstants;
 import frc.robot.Robotstate;
 import frc.robot.Subsystems.Shooter.Elevation.*;
 import frc.robot.Subsystems.Shooter.Flywheel.*;
+import frc.robot.Subsystems.Vision.Vision;
+
 import org.littletonrobotics.junction.Logger;
 
 public class LaunchCalculator {
@@ -199,7 +201,7 @@ public class LaunchCalculator {
     return timeOfFlightMap.get(maxDistance);
   }
 
-  public ShooterMeasurables getParameters() {
+  public ShooterMeasurables getParameters(Vision vision) {
     boolean passing =
         AllianceFlipUtil.applyX(
                 Robotstate.getInstance().getRobotPoseFromSwerveDriveOdometry().getX())
@@ -209,7 +211,7 @@ public class LaunchCalculator {
     }
 
     // Calculate estimated pose while accounting for phase delay
-    Pose2d estimatedPose = Robotstate.getInstance().getRobotPoseFromSwerveDriveOdometry();
+    Pose2d estimatedPose = vision.getLocation();
     ChassisSpeeds robotRelativeVelocity = Robotstate.getInstance().getRobotChassisSpeeds();
     estimatedPose =
         estimatedPose.exp(
