@@ -41,10 +41,8 @@ public class RobotContainer {
     SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>[]
         moduleConstants = config.getModuleConstants();
 
-    intake = new Intake(new IntakeIOCTRE(config));
-    shooter = new Shooter(new ElevationIOCTRE(config), new FlywheelIOCTRE(config), LaunchCalculator.getInstance());
-    indexer = new Indexer(new IndexerIOCTRE(config));
-    swerveSubsystem =
+
+        swerveSubsystem =
         new SwerveSubsystem(
             new SwerveIOCTRE(config.getSwerveDrivetrainConstants(), config.getModuleConstants()),
             config.geRobotConfig(),
@@ -52,9 +50,18 @@ public class RobotContainer {
             moduleConstants[0].SpeedAt12Volts,
             moduleConstants[0].SpeedAt12Volts
                 / Math.hypot(moduleConstants[0].LocationX, moduleConstants[0].LocationY));
+        vision =
+        new Vision(
+            swerveSubsystem,
+            config,
+            new VisionIOPhotonvision("photonvision", config.getVisionConfigurations().get(0)));
 
-    superstructure = 
-        new Superstructure(swerveSubsystem, intake, null, null, vision)
+    intake = new Intake(new IntakeIOCTRE(config));
+    shooter = new Shooter(new ElevationIOCTRE(config), new FlywheelIOCTRE(config), LaunchCalculator.getInstance(), vision);
+    indexer = new Indexer(new IndexerIOCTRE(config));
+   
+
+   
     // swerveSubsystem =
     //     new SwerveSubsystem(
     //         new SwerveIOCTRE(config.getSwerveDrivetrainConstants(),
@@ -64,11 +71,7 @@ public class RobotContainer {
     //         0.5,
     //         0.5 / Math.hypot(moduleConstants[0].LocationX, moduleConstants[0].LocationY));
     
-    vision =
-        new Vision(
-            swerveSubsystem,
-            config,
-            new VisionIOPhotonvision("photonvision", config.getVisionConfigurations().get(0)));
+    
 
     superstructure = new Superstructure(swerveSubsystem, intake, shooter, indexer, vision);
 
@@ -84,7 +87,7 @@ public class RobotContainer {
         .leftTrigger()
         .whileTrue(
           new InstantCommand(
-            () -> superstructure.setWantedStateSuperstructureState(WantedSuperstructureState.INTAKE)
+            () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.INTAKING)
           )
         );
 

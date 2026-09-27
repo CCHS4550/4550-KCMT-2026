@@ -18,7 +18,7 @@ public class AlignToGoalCommand extends Command{
     private Supplier<Pose2d> poseSupplier;
     private Pose2d targetPose;
     public AlignToGoalCommand (Vision vision) {
-        this.poseSupplier = () -> vision.getPosition(); //replace with function for getting position
+        this.poseSupplier = () -> vision.getLocation(); //replace with function for getting position
         addRequirements(vision);
     }
     public AlignToGoalCommand (Robotstate robotState) {
