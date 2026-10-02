@@ -71,7 +71,7 @@ public class ElevationIOCTRE implements ElevationIO {
     elevationConfig.Slot0.kS = bruinRobotConfig.getShooterConfig().elevationKs;
     elevationConfig.Slot0.kV = bruinRobotConfig.getShooterConfig().elevationKv;
     elevationConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    elevationConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    elevationConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
 
     elevationConfig.MotionMagic.MotionMagicCruiseVelocity = 64.4;
     elevationConfig.MotionMagic.MotionMagicAcceleration = 75.3; // some constant idk

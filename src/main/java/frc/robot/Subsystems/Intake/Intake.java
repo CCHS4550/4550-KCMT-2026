@@ -32,7 +32,6 @@ public class Intake extends SubsystemBase {
 
   private Rotation2d desiredIntakeAngle = new Rotation2d(0);
 
-
   private IntakeIOInputsAutoLogged inputs = new IntakeIOInputsAutoLogged();
 
   public Intake(IntakeIO intakeIO) {
@@ -49,15 +48,22 @@ public class Intake extends SubsystemBase {
       case IDLE:
         intakeIO.setExtensionVoltage(0.0);
         intakeIO.setSpinnerVoltage(0.0);
+        break;
       case INTAKE:
-        intakeIO.setSpinnerVoltage(5.0);
-        intakeIO.setExtensionMotorPositionRad(Constants.IntakeConstants.INTAKE_BOTTOM_RADS, 100, 50);
+        intakeIO.setSpinnerVoltage(3.0);
+        intakeIO.setExtensionMotorPositionRad(
+            Constants.IntakeConstants.INTAKE_BOTTOM_RADS, 100, 50);
+        break;
       case PUMP_DOWN:
         intakeIO.setSpinnerVoltage(5.0);
-        intakeIO.setExtensionMotorPositionRad(Constants.IntakeConstants.INTAKE_BOTTOM_PUMP_RADS, 100, 50);
+        intakeIO.setExtensionMotorPositionRad(
+            Constants.IntakeConstants.INTAKE_BOTTOM_PUMP_RADS, 100, 50);
+        break;
       case PUMP_UP:
         intakeIO.setSpinnerVoltage(5.0);
-        intakeIO.setExtensionMotorPositionRad(Constants.IntakeConstants.INTAKE_TOP_PUMP_RADS, 100, 50);
+        intakeIO.setExtensionMotorPositionRad(
+            Constants.IntakeConstants.INTAKE_TOP_PUMP_RADS, 100, 50);
+        break;
       default:
         intakeIO.setExtensionVoltage(0.0);
         intakeIO.setSpinnerVoltage(0.0);
@@ -79,7 +85,7 @@ public class Intake extends SubsystemBase {
         if (systemState != SystemState.PUMP_DOWN && systemState != SystemState.PUMP_UP) {
           return SystemState.PUMP_DOWN;
         }
-        return systemState; 
+        return systemState;
       default:
         return SystemState.IDLE;
     }
@@ -94,7 +100,7 @@ public class Intake extends SubsystemBase {
   }
 
   @AutoLogOutput(key = "Subsystems/Intake/AtWantedAngle")
- private void updatePumpingStateMachine() {
+  private void updatePumpingStateMachine() {
     // Only run this logic if the user actually wants to pump
     if (wantedState != WantedIntakeState.PUMPING) {
       return;
@@ -119,7 +125,6 @@ public class Intake extends SubsystemBase {
       }
     }
   }
-  
 
   @Override
   public void periodic() {
@@ -130,7 +135,8 @@ public class Intake extends SubsystemBase {
     systemState = handleStateTransitions();
 
     updatePumpingStateMachine();
-    
+    System.out.println("Current Intake State: " + systemState);
+
     applyStates();
   }
 }

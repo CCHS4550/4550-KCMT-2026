@@ -23,7 +23,6 @@ public interface FlywheelIO {
     public double flywheel3SupplyCurrent = 0.0;
     public double flywheel3Temperature = 0.0;
 
-
     public double flywheel4AppliedVoltage = 0.0;
     public double flywheel4StatorCurrent = 0.0;
     public double flywheel4SupplyCurrent = 0.0;

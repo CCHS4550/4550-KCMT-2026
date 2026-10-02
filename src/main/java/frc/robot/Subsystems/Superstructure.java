@@ -34,7 +34,11 @@ public class Superstructure extends SubsystemBase {
       new ShooterMeasurables(false, new Rotation2d(), 0, 0, 0, 0, 0, 0, 0, false);
 
   public Superstructure(
-      SwerveSubsystem swerveSubsystem, Intake intake, Shooter shooter, Indexer indexer, Vision vision) {
+      SwerveSubsystem swerveSubsystem,
+      Intake intake,
+      Shooter shooter,
+      Indexer indexer,
+      Vision vision) {
     this.swerveSubsystem = swerveSubsystem;
     this.intake = intake;
     this.indexer = indexer;
@@ -111,21 +115,30 @@ public class Superstructure extends SubsystemBase {
         break;
       case INTAKING:
         intake.setWantedIntakeState(WantedIntakeState.INTAKE);
-        indexer.setWantedState(IndexerWantedState.IDLE);
-        if (shooter.getSystemState() != ShooterSystemState.ZERO) {
-          shooter.setWantedState(ShooterWantedState.IDLE);
-        }
+        // indexer.setWantedState(IndexerWantedState.IDLE);
+        // if (shooter.getSystemState() != ShooterSystemState.ZERO) {
+        //   shooter.setWantedState(ShooterWantedState.IDLE);
+        // }
         break;
-      
+
       case SHOOT:
         swerveSubsystem.setTargetRotation(shooterCalcs.getDriveAngle());
         intake.setWantedIntakeState(WantedIntakeState.PUMPING);
-        
+
         shooter.setWantedState(ShooterWantedState.ACTIVE_SHOOT);
 
-        if (shooter.atSetpoint()){
+        if (shooter.atSetpoint()) {
           indexer.setWantedState(IndexerWantedState.RUNNING);
         }
+        break;
+
+      default:
+        if (DriverStation.isDisabled()) {
+          swerveSubsystem.setWantedState(WantedState.IDLE);
+        }
+        intake.setWantedIntakeState(WantedIntakeState.IDLE);
+        indexer.setWantedState(IndexerWantedState.IDLE);
+        shooter.setWantedState(ShooterWantedState.IDLE);
         break;
     }
   }

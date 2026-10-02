@@ -28,7 +28,6 @@ import frc.robot.Robotstate;
 import frc.robot.Subsystems.Shooter.Elevation.*;
 import frc.robot.Subsystems.Shooter.Flywheel.*;
 import frc.robot.Subsystems.Vision.Vision;
-
 import org.littletonrobotics.junction.Logger;
 
 public class LaunchCalculator {

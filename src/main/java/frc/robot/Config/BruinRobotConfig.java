@@ -36,22 +36,20 @@ public class BruinRobotConfig {
   public final CanDeviceID BACK_RIGHT_STEER_MOTOR = new CanDeviceID(11);
   public final CanDeviceID BACK_RIGHT_STEER_ENCODER = new CanDeviceID(12);
 
-  public final CanDeviceID KICKER_MOTOR = new CanDeviceID(16, CANIVORE_CANBUS);
-  public final CanDeviceID INDEXER_MOTOR = new CanDeviceID(23, CANIVORE_CANBUS);
+  public final CanDeviceID KICKER_MOTOR = new CanDeviceID(15, CANIVORE_CANBUS);
+  public final CanDeviceID INDEXER_MOTOR = new CanDeviceID(55, CANIVORE_CANBUS);
 
-  public final CanDeviceID ROTATION_MOTOR = new CanDeviceID(19, CANIVORE_CANBUS);
-  public final CanDeviceID ELEVATION_MOTOR = new CanDeviceID(20, CANIVORE_CANBUS);
+  public final CanDeviceID ELEVATION_MOTOR = new CanDeviceID(16, CANIVORE_CANBUS);
 
-  public final CanDeviceID FLYWHEEL_MOTOR_1 = new CanDeviceID(-1, CANIVORE_CANBUS);
-  public final CanDeviceID FLYWHEEL_MOTOR_2 = new CanDeviceID(-1, CANIVORE_CANBUS);
-  public final CanDeviceID FLYWHEEL_MOTOR_3 = new CanDeviceID(-1, CANIVORE_CANBUS);
-  public final CanDeviceID FLYWHEEL_MOTOR_4 = new CanDeviceID(-1, CANIVORE_CANBUS);
+  public final CanDeviceID FLYWHEEL_MOTOR_1 = new CanDeviceID(21, CANIVORE_CANBUS);
+  public final CanDeviceID FLYWHEEL_MOTOR_2 = new CanDeviceID(52, CANIVORE_CANBUS);
+  public final CanDeviceID FLYWHEEL_MOTOR_3 = new CanDeviceID(25, CANIVORE_CANBUS);
+  public final CanDeviceID FLYWHEEL_MOTOR_4 = new CanDeviceID(51, CANIVORE_CANBUS);
 
   public final CanDeviceID ELEVATION_CANCODER = new CanDeviceID(21, CANIVORE_CANBUS);
-  public final CanDeviceID ROTATION_CANCODER = new CanDeviceID(22, CANIVORE_CANBUS);
 
-  public final CanDeviceID INTAKE_ROLLER = new CanDeviceID(14, CANIVORE_CANBUS);
-  public final CanDeviceID INTAKE_EXTENSION = new CanDeviceID(15, CANIVORE_CANBUS);
+  public final CanDeviceID INTAKE_ROLLER = new CanDeviceID(22, CANIVORE_CANBUS);
+  public final CanDeviceID INTAKE_EXTENSION = new CanDeviceID(50, CANIVORE_CANBUS);
 
   /**
    * Wheel radius in meters. Accuracy in these measurements affects wheel odometry which measures
@@ -315,12 +313,12 @@ public class BruinRobotConfig {
 
     intakeConfig =
         new IntakeConfig()
-            .withExtensionkP(0.7)
+            .withExtensionkP(2.0)
             .withExtensionkI(0.0)
             .withExtensionkD(0.0)
-            .withExtensionkS(0.0)
+            .withExtensionkS(0.5)
             .withExtensionkV(0.0)
-            .withExtensionkG(0.0);
+            .withExtensionkG(0.5);
   }
 
   public SwerveDrivetrainConstants getSwerveDrivetrainConstants() {

@@ -8,6 +8,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
@@ -28,6 +29,8 @@ public class IntakeIOCTRE implements IntakeIO {
 
   private DynamicMotionMagicVoltage extensionController =
       new DynamicMotionMagicVoltage(0, 100, 50).withSlot(0);
+
+  private PIDController extensionContro = new PIDController(1.0, 0, 0);
 
   private final StatusSignal<Voltage> spinnerAppliedVolts;
   private final StatusSignal<Current> spinnerSupplyCurrentAmps;
@@ -56,8 +59,8 @@ public class IntakeIOCTRE implements IntakeIO {
     spinnerConfig = new TalonFXConfiguration();
     spinnerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
     spinnerConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-    spinnerConfig.CurrentLimits.SupplyCurrentLimit = 40.0;
-    spinnerConfig.CurrentLimits.StatorCurrentLimit = 90.0;
+    spinnerConfig.CurrentLimits.SupplyCurrentLimit = 100.0;
+    spinnerConfig.CurrentLimits.StatorCurrentLimit = 100.0;
 
     spinnerConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     spinnerConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
@@ -155,6 +158,8 @@ public class IntakeIOCTRE implements IntakeIO {
             .withPosition(Units.radiansToRotations(rad))
             .withVelocity(veloRotPerSec)
             .withAcceleration(accelRotPerSec));
+
+    // extensionIntakeMotor.setControl(extensionContro.calculate(rad));
   }
 
   @Override

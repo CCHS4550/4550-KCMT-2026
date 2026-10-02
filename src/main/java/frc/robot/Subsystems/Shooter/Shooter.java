@@ -48,7 +48,8 @@ public class Shooter extends SubsystemBase {
   private ShooterSystemState systemState = ShooterSystemState.IDLE;
   private ShooterWantedState wantedState = ShooterWantedState.IDLE;
 
-  public Shooter(ElevationIO elevationIO, FlywheelIO flywheelIO, LaunchCalculator calculator, Vision vision) {
+  public Shooter(
+      ElevationIO elevationIO, FlywheelIO flywheelIO, LaunchCalculator calculator, Vision vision) {
     this.elevationIO = elevationIO;
     this.flywheelIO = flywheelIO;
     this.calculator = calculator;

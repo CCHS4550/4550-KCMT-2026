@@ -1,7 +1,5 @@
 package frc.robot.Subsystems.Vision;
 
-import static edu.wpi.first.units.Units.Degree;
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
 import static frc.robot.Constant.Constants.VisionConstants.*;
 
@@ -18,9 +16,9 @@ import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Alert;
 import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Config.BruinRobotConfig;
 import frc.robot.Constant.FieldConstants;
 import frc.robot.Robotstate;
-import frc.robot.Config.BruinRobotConfig;
 import frc.robot.Subsystems.Drive.SwerveSubsystem;
 import frc.robot.Subsystems.Vision.VisionIO.PoseObservation;
 import java.util.LinkedList;
@@ -29,7 +27,7 @@ import org.littletonrobotics.junction.Logger;
 
 public class Vision extends SubsystemBase {
   // consumer for our vision data, how all data leaves the subsystem
- 
+
   private final SwerveModulePosition[] positions;
   // combining drive data and vision data into on singular place
   private final SwerveSubsystem drive;
@@ -37,192 +35,187 @@ public class Vision extends SubsystemBase {
   private final SwerveDriveKinematics kinematics;
 
   private Pose2d currentPosition;
-  
-  
-  
-    // array of VisionIO interfaces for the amount of cameras that we have, can be defined as real or
-    // sim later
-    private final VisionIO[] io;
-  
-    // array of the autologged vision inputs
-    private final VisionIOInputsAutoLogged[] inputs;
-  
-    // alerts for if a camera gets disconnected
-    private final Alert[] disconnectedAlerts;
-  
-    /**
-     * constructor for our vision subsystem
-     *
-     * @param consumer takes in finalized vision date in order for other classes to use through the
-     *     functional interface
-     * @param io instances of VisionIO or classes implementing VisionIO
-     */
-    public Vision(SwerveSubsystem drive, BruinRobotConfig config, VisionIO... io) {
-      // Initialize io and the consumer
-      this.io = io;
-  
-      this.drive = drive;
-  
-      this.kinematics = 
-      new SwerveDriveKinematics(config.getModuleTranslations()[0],
-                                  config.getModuleTranslations()[1], 
-                                  config.getModuleTranslations()[2], 
-                                  config.getModuleTranslations()[3] );
-  
-      currentPosition = new Pose2d(0,0, new Rotation2d(Radians.of(0.0)));
-  
-      positions = new SwerveModulePosition[]{
-        new SwerveModulePosition(),
-        new SwerveModulePosition(),
-        new SwerveModulePosition(),
-        new SwerveModulePosition()
-      };
-  
-      this.swerveDrivePoseEstimator = new SwerveDrivePoseEstimator(kinematics, drive.getSwerveRotation(), positions , currentPosition);
-  
-      // Initialize inputs
-      this.inputs = new VisionIOInputsAutoLogged[io.length];
-      for (int i = 0; i < inputs.length; i++) {
-        inputs[i] = new VisionIOInputsAutoLogged();
-      }
-  
-      // Initialize disconnected alerts
-      this.disconnectedAlerts = new Alert[io.length];
-      for (int i = 0; i < inputs.length; i++) {
-        disconnectedAlerts[i] =
-            new Alert(
-                "Vision camera " + Integer.toString(i) + " is disconnected.", AlertType.kWarning);
-      }
-    }
-  
-    /**
-     * Returns the X angle to the best target, which can be used for simple servoing with vision.
-     *
-     * @param cameraIndex The index of the camera to use.
-     */
-    public Rotation2d getTargetX(int cameraIndex) {
-      return inputs[cameraIndex].latestTargetObservation.tx();
-    }
-  
-    @Override
-    public void periodic() {
-  
-      swerveDrivePoseEstimator.update(drive.getSwerveRotation(), positions);
-  
-  
-  
-      /** update auto logged inputs for every module */
-      for (int i = 0; i < io.length; i++) {
-        io[i].updateInputs(inputs[i]);
-        Logger.processInputs("Vision/Camera" + Integer.toString(i), inputs[i]);
-      }
-  
-      // Initialize logging values for overall system
-      List<Pose3d> allTagPoses = new LinkedList<>();
-      List<Pose3d> allRobotPoses = new LinkedList<>();
-      List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
-      List<Pose3d> allRobotPosesRejected = new LinkedList<>();
-  
-      // Loop over cameras to create relevant values for each camera as well as calculate poses
-      for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
-        // Update disconnected alert
-        disconnectedAlerts[cameraIndex].set(!inputs[cameraIndex].connected);
-  
-        // Initialize logging values per camera, not overall
-        List<Pose3d> tagPoses = new LinkedList<>();
-        List<Pose3d> robotPoses = new LinkedList<>();
-        List<Pose3d> robotPosesAccepted = new LinkedList<>();
-        List<Pose3d> robotPosesRejected = new LinkedList<>();
-  
-        // Add tag poses for all relevant tages
-        for (int tagId : inputs[cameraIndex].tagIds) {
-          var tagPose = FieldConstants.FIELD_LAYOUT.getTagPose(tagId);
-          if (tagPose.isPresent()) {
-            tagPoses.add(tagPose.get());
-          }
-        }
-  
-        // filter and send information for all observations of a camera
-        for (var observation : inputs[cameraIndex].poseObservations) {
-          boolean rejectPose =
-              observation.tagCount() == 0 // Must have at least one tag
-                  || observation.ambiguity() > maxAmbiguity // Cannot be high ambiguity
-                  || Math.abs(observation.pose().getZ())
-                      > maxZError // Must have realistic Z coordinate
-  
-                  // Must be within the field boundaries
-                  || observation.pose().getX() < 0.0
-                  || observation.pose().getX() > FieldConstants.FIELD_LAYOUT.getFieldLength()
-                  || observation.pose().getY() < 0.0
-                  || observation.pose().getY() > FieldConstants.FIELD_LAYOUT.getFieldWidth();
-  
-          // must be from the allowed tags if we are doing precision vision
-          // || rejectTagsFromTagAllowance(observation);
-  
-          // Add pose to log
-          robotPoses.add(observation.pose());
-          if (rejectPose) {
-            robotPosesRejected.add(observation.pose());
-          } else {
-            robotPosesAccepted.add(observation.pose());
-          }
-  
-          // Skip if rejected
-          if (rejectPose) {
-            continue;
-          }
-  
-          // Calculate standard deviations
-          double stdDevFactor =
-              Math.pow(observation.averageTagDistance(), 2.0) / observation.tagCount();
-          if (Robotstate.getInstance().getRobotChassisSpeeds().omegaRadiansPerSecond > 1.0) {
-            stdDevFactor *=
-                Math.pow(
-                    Robotstate.getInstance().getRobotChassisSpeeds().omegaRadiansPerSecond,
-                    2.0); // increase standard deviation if the bots rotational speed is too high
-          }
-          double linearSpeed =
-              Math.sqrt(
-                  Math.pow(Robotstate.getInstance().getRobotChassisSpeeds().vxMetersPerSecond, 2.0)
-                      + Math.pow(
-                          Robotstate.getInstance().getRobotChassisSpeeds().vyMetersPerSecond, 2.0));
-          if (linearSpeed > 2.0) {
-            stdDevFactor *=
-                linearSpeed; // increase standard deviation if the bots linear speed is too high
-          }
-          double linearStdDev = linearStdDevBaseline * stdDevFactor;
-          double angularStdDev = angularStdDevBaseline * stdDevFactor;
-  
-          // Send vision observation
-          swerveDrivePoseEstimator.addVisionMeasurement(
-      observation.pose().toPose2d(),
-      observation.timestamp(),
-      VecBuilder.fill(
-          linearStdDev,
-          linearStdDev,
-          angularStdDev));
-        }
-        // Log camera datadata
-        Logger.recordOutput(
-            "Vision/Camera" + Integer.toString(cameraIndex) + "/TagPoses",
-            tagPoses.toArray(new Pose3d[tagPoses.size()]));
-        Logger.recordOutput(
-            "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPoses",
-            robotPoses.toArray(new Pose3d[robotPoses.size()]));
-        Logger.recordOutput(
-            "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesAccepted",
-            robotPosesAccepted.toArray(new Pose3d[robotPosesAccepted.size()]));
-        Logger.recordOutput(
-            "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesRejected",
-            robotPosesRejected.toArray(new Pose3d[robotPosesRejected.size()]));
-        allTagPoses.addAll(tagPoses);
-        allRobotPoses.addAll(robotPoses);
-        allRobotPosesAccepted.addAll(robotPosesAccepted);
-        allRobotPosesRejected.addAll(robotPosesRejected);
-  
-        currentPosition = swerveDrivePoseEstimator.getEstimatedPosition();
 
-      
+  // array of VisionIO interfaces for the amount of cameras that we have, can be defined as real or
+  // sim later
+  private final VisionIO[] io;
+
+  // array of the autologged vision inputs
+  private final VisionIOInputsAutoLogged[] inputs;
+
+  // alerts for if a camera gets disconnected
+  private final Alert[] disconnectedAlerts;
+
+  /**
+   * constructor for our vision subsystem
+   *
+   * @param consumer takes in finalized vision date in order for other classes to use through the
+   *     functional interface
+   * @param io instances of VisionIO or classes implementing VisionIO
+   */
+  public Vision(SwerveSubsystem drive, BruinRobotConfig config, VisionIO... io) {
+    // Initialize io and the consumer
+    this.io = io;
+
+    this.drive = drive;
+
+    this.kinematics =
+        new SwerveDriveKinematics(
+            config.getModuleTranslations()[0],
+            config.getModuleTranslations()[1],
+            config.getModuleTranslations()[2],
+            config.getModuleTranslations()[3]);
+
+    currentPosition = new Pose2d(0, 0, new Rotation2d(Radians.of(0.0)));
+
+    positions =
+        new SwerveModulePosition[] {
+          new SwerveModulePosition(),
+          new SwerveModulePosition(),
+          new SwerveModulePosition(),
+          new SwerveModulePosition()
+        };
+
+    this.swerveDrivePoseEstimator =
+        new SwerveDrivePoseEstimator(
+            kinematics, drive.getSwerveRotation(), positions, currentPosition);
+
+    // Initialize inputs
+    this.inputs = new VisionIOInputsAutoLogged[io.length];
+    for (int i = 0; i < inputs.length; i++) {
+      inputs[i] = new VisionIOInputsAutoLogged();
+    }
+
+    // Initialize disconnected alerts
+    this.disconnectedAlerts = new Alert[io.length];
+    for (int i = 0; i < inputs.length; i++) {
+      disconnectedAlerts[i] =
+          new Alert(
+              "Vision camera " + Integer.toString(i) + " is disconnected.", AlertType.kWarning);
+    }
+  }
+
+  /**
+   * Returns the X angle to the best target, which can be used for simple servoing with vision.
+   *
+   * @param cameraIndex The index of the camera to use.
+   */
+  public Rotation2d getTargetX(int cameraIndex) {
+    return inputs[cameraIndex].latestTargetObservation.tx();
+  }
+
+  @Override
+  public void periodic() {
+
+    swerveDrivePoseEstimator.update(drive.getSwerveRotation(), positions);
+
+    /** update auto logged inputs for every module */
+    for (int i = 0; i < io.length; i++) {
+      io[i].updateInputs(inputs[i]);
+      Logger.processInputs("Vision/Camera" + Integer.toString(i), inputs[i]);
+    }
+
+    // Initialize logging values for overall system
+    List<Pose3d> allTagPoses = new LinkedList<>();
+    List<Pose3d> allRobotPoses = new LinkedList<>();
+    List<Pose3d> allRobotPosesAccepted = new LinkedList<>();
+    List<Pose3d> allRobotPosesRejected = new LinkedList<>();
+
+    // Loop over cameras to create relevant values for each camera as well as calculate poses
+    for (int cameraIndex = 0; cameraIndex < io.length; cameraIndex++) {
+      // Update disconnected alert
+      disconnectedAlerts[cameraIndex].set(!inputs[cameraIndex].connected);
+
+      // Initialize logging values per camera, not overall
+      List<Pose3d> tagPoses = new LinkedList<>();
+      List<Pose3d> robotPoses = new LinkedList<>();
+      List<Pose3d> robotPosesAccepted = new LinkedList<>();
+      List<Pose3d> robotPosesRejected = new LinkedList<>();
+
+      // Add tag poses for all relevant tages
+      for (int tagId : inputs[cameraIndex].tagIds) {
+        var tagPose = FieldConstants.FIELD_LAYOUT.getTagPose(tagId);
+        if (tagPose.isPresent()) {
+          tagPoses.add(tagPose.get());
+        }
+      }
+
+      // filter and send information for all observations of a camera
+      for (var observation : inputs[cameraIndex].poseObservations) {
+        boolean rejectPose =
+            observation.tagCount() == 0 // Must have at least one tag
+                || observation.ambiguity() > maxAmbiguity // Cannot be high ambiguity
+                || Math.abs(observation.pose().getZ())
+                    > maxZError // Must have realistic Z coordinate
+
+                // Must be within the field boundaries
+                || observation.pose().getX() < 0.0
+                || observation.pose().getX() > FieldConstants.FIELD_LAYOUT.getFieldLength()
+                || observation.pose().getY() < 0.0
+                || observation.pose().getY() > FieldConstants.FIELD_LAYOUT.getFieldWidth();
+
+        // must be from the allowed tags if we are doing precision vision
+        // || rejectTagsFromTagAllowance(observation);
+
+        // Add pose to log
+        robotPoses.add(observation.pose());
+        if (rejectPose) {
+          robotPosesRejected.add(observation.pose());
+        } else {
+          robotPosesAccepted.add(observation.pose());
+        }
+
+        // Skip if rejected
+        if (rejectPose) {
+          continue;
+        }
+
+        // Calculate standard deviations
+        double stdDevFactor =
+            Math.pow(observation.averageTagDistance(), 2.0) / observation.tagCount();
+        if (Robotstate.getInstance().getRobotChassisSpeeds().omegaRadiansPerSecond > 1.0) {
+          stdDevFactor *=
+              Math.pow(
+                  Robotstate.getInstance().getRobotChassisSpeeds().omegaRadiansPerSecond,
+                  2.0); // increase standard deviation if the bots rotational speed is too high
+        }
+        double linearSpeed =
+            Math.sqrt(
+                Math.pow(Robotstate.getInstance().getRobotChassisSpeeds().vxMetersPerSecond, 2.0)
+                    + Math.pow(
+                        Robotstate.getInstance().getRobotChassisSpeeds().vyMetersPerSecond, 2.0));
+        if (linearSpeed > 2.0) {
+          stdDevFactor *=
+              linearSpeed; // increase standard deviation if the bots linear speed is too high
+        }
+        double linearStdDev = linearStdDevBaseline * stdDevFactor;
+        double angularStdDev = angularStdDevBaseline * stdDevFactor;
+
+        // Send vision observation
+        swerveDrivePoseEstimator.addVisionMeasurement(
+            observation.pose().toPose2d(),
+            observation.timestamp(),
+            VecBuilder.fill(linearStdDev, linearStdDev, angularStdDev));
+      }
+      // Log camera datadata
+      Logger.recordOutput(
+          "Vision/Camera" + Integer.toString(cameraIndex) + "/TagPoses",
+          tagPoses.toArray(new Pose3d[tagPoses.size()]));
+      Logger.recordOutput(
+          "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPoses",
+          robotPoses.toArray(new Pose3d[robotPoses.size()]));
+      Logger.recordOutput(
+          "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesAccepted",
+          robotPosesAccepted.toArray(new Pose3d[robotPosesAccepted.size()]));
+      Logger.recordOutput(
+          "Vision/Camera" + Integer.toString(cameraIndex) + "/RobotPosesRejected",
+          robotPosesRejected.toArray(new Pose3d[robotPosesRejected.size()]));
+      allTagPoses.addAll(tagPoses);
+      allRobotPoses.addAll(robotPoses);
+      allRobotPosesAccepted.addAll(robotPosesAccepted);
+      allRobotPosesRejected.addAll(robotPosesRejected);
+
+      currentPosition = swerveDrivePoseEstimator.getEstimatedPosition();
     }
     // Log summary data
     Logger.recordOutput(
@@ -256,7 +249,7 @@ public class Vision extends SubsystemBase {
   }
 
   // TODO: should this be static?!!!
-  public Pose2d getLocation(){
+  public Pose2d getLocation() {
     return currentPosition;
   }
 

@@ -99,9 +99,9 @@ public final class Constants {
     public static final double EXTENSION_POSITION_COEFFICIENT = 2 * Math.PI * EXTENSION_GEAR_RATIO;
 
     public static final double INTAKE_BOTTOM_RADS = 0.0;
-    public static final double INTAKE_STOWED_RADS = 99999999; // fill
-    public static final double INTAKE_TOP_PUMP_RADS = 99999999; // fill
-    public static final double INTAKE_BOTTOM_PUMP_RADS = 999999; // fill
+    public static final double INTAKE_STOWED_RADS = -1.943186; // fill
+    public static final double INTAKE_TOP_PUMP_RADS = -1.5; // fill
+    public static final double INTAKE_BOTTOM_PUMP_RADS = -0.6; // fill
   }
 
   public static final class LowerChassisConstants {
@@ -130,6 +130,4 @@ public final class Constants {
     // public static final Pose2d HUB_POSITION = new Pose2d(4.625594,4.034663,new Rotation2d());
 
   }
-
-  
 }

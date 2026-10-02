@@ -9,17 +9,17 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Config.BruinRobotConfig;
-import frc.robot.Subsystems.Superstructure;
-import frc.robot.Subsystems.Superstructure.WantedSuperstructureState;
 import frc.robot.Subsystems.Drive.SwerveIOCTRE;
 import frc.robot.Subsystems.Drive.SwerveSubsystem;
 import frc.robot.Subsystems.Indexer.Indexer;
 import frc.robot.Subsystems.Indexer.IndexerIOCTRE;
 import frc.robot.Subsystems.Intake.Intake;
 import frc.robot.Subsystems.Intake.IntakeIOCTRE;
-import frc.robot.Subsystems.Shooter.Shooter;
 import frc.robot.Subsystems.Shooter.Elevation.ElevationIOCTRE;
 import frc.robot.Subsystems.Shooter.Flywheel.FlywheelIOCTRE;
+import frc.robot.Subsystems.Shooter.Shooter;
+import frc.robot.Subsystems.Superstructure;
+import frc.robot.Subsystems.Superstructure.WantedSuperstructureState;
 import frc.robot.Subsystems.Vision.Vision;
 import frc.robot.Subsystems.Vision.VisionIOPhotonvision;
 import frc.robot.Util.LaunchCalculator;
@@ -34,15 +34,13 @@ public class RobotContainer {
   private final Intake intake;
   private final Shooter shooter;
   private final Indexer indexer;
-  
 
   public RobotContainer() {
     BruinRobotConfig config = new BruinRobotConfig();
     SwerveModuleConstants<TalonFXConfiguration, TalonFXConfiguration, CANcoderConfiguration>[]
         moduleConstants = config.getModuleConstants();
 
-
-        swerveSubsystem =
+    swerveSubsystem =
         new SwerveSubsystem(
             new SwerveIOCTRE(config.getSwerveDrivetrainConstants(), config.getModuleConstants()),
             config.geRobotConfig(),
@@ -50,18 +48,21 @@ public class RobotContainer {
             moduleConstants[0].SpeedAt12Volts,
             moduleConstants[0].SpeedAt12Volts
                 / Math.hypot(moduleConstants[0].LocationX, moduleConstants[0].LocationY));
-        vision =
+    vision =
         new Vision(
             swerveSubsystem,
             config,
             new VisionIOPhotonvision("photonvision", config.getVisionConfigurations().get(0)));
 
     intake = new Intake(new IntakeIOCTRE(config));
-    shooter = new Shooter(new ElevationIOCTRE(config), new FlywheelIOCTRE(config), LaunchCalculator.getInstance(), vision);
+    shooter =
+        new Shooter(
+            new ElevationIOCTRE(config),
+            new FlywheelIOCTRE(config),
+            LaunchCalculator.getInstance(),
+            vision);
     indexer = new Indexer(new IndexerIOCTRE(config));
-   
 
-   
     // swerveSubsystem =
     //     new SwerveSubsystem(
     //         new SwerveIOCTRE(config.getSwerveDrivetrainConstants(),
@@ -70,26 +71,32 @@ public class RobotContainer {
     //         controller,
     //         0.5,
     //         0.5 / Math.hypot(moduleConstants[0].LocationX, moduleConstants[0].LocationY));
-    
-    
 
     superstructure = new Superstructure(swerveSubsystem, intake, shooter, indexer, vision);
 
     controller
         .rightTrigger()
         .whileTrue(
-          new InstantCommand(
-            () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.SHOOT)
-          )
-        );
+            new InstantCommand(
+                () ->
+                    superstructure.setWantedSuperstructureState(WantedSuperstructureState.SHOOT)));
 
     controller
         .leftTrigger()
         .whileTrue(
-          new InstantCommand(
-            () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.INTAKING)
-          )
-        );
+            new InstantCommand(
+                () ->
+                    superstructure.setWantedSuperstructureState(
+                        WantedSuperstructureState.INTAKING)))
+        .onTrue(
+            new InstantCommand(
+                () ->
+                    superstructure.setWantedSuperstructureState(
+                        WantedSuperstructureState.INTAKING)))
+        .onFalse(
+            new InstantCommand(
+                () ->
+                    superstructure.setWantedSuperstructureState((WantedSuperstructureState.IDLE))));
 
     // controller
     //     .a()
@@ -250,7 +257,6 @@ public class RobotContainer {
     swerveSubsystem.resetTranslationAndRotation(new Pose2d(3, 3, new Rotation2d()));
   }
 
-  
   public boolean isAtAutoStartingPose(Pose2d AutoStartingPose) {
     var distance =
         AutoStartingPose.getTranslation()
