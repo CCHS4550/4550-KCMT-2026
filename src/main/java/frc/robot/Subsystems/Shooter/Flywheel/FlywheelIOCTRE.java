@@ -1,5 +1,7 @@
 package frc.robot.Subsystems.Shooter.Flywheel;
 
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -62,8 +64,15 @@ public class FlywheelIOCTRE implements FlywheelIO {
     flywheelMotor4 =
         new TalonFX(config.FLYWHEEL_MOTOR_4.getDeviceNumber(), config.FLYWHEEL_MOTOR_4.getBus());
 
-    Follower follower =
+    Follower followerAligned =
         new Follower(config.FLYWHEEL_MOTOR_1.getDeviceNumber(), MotorAlignmentValue.Aligned);
+
+    Follower followerOpposed =
+        new Follower(config.FLYWHEEL_MOTOR_1.getDeviceNumber(), MotorAlignmentValue.Opposed);
+
+    flywheelMotor2.setControl(followerAligned);
+    flywheelMotor3.setControl(followerOpposed);
+    flywheelMotor4.setControl(followerOpposed);
     shooterConfig = new TalonFXConfiguration();
     shooterConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
     shooterConfig.CurrentLimits.StatorCurrentLimitEnable = true;
@@ -86,11 +95,14 @@ public class FlywheelIOCTRE implements FlywheelIO {
 
     Phoenix6Util.applyAndCheckConfiguration(flywheelMotor1, shooterConfig, 5);
     Phoenix6Util.applyAndCheckConfiguration(flywheelMotor2, shooterConfig, 5);
-    Phoenix6Util.applyAndCheckConfiguration(flywheelMotor3, shooterConfig, 5);
 
-    flywheelMotor2.setControl(follower);
-    flywheelMotor3.setControl(follower);
-    flywheelMotor4.setControl(follower);
+    shooterConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    Phoenix6Util.applyAndCheckConfiguration(flywheelMotor3, shooterConfig, 5);
+    Phoenix6Util.applyAndCheckConfiguration(flywheelMotor4, shooterConfig, 5);
+
+    flywheelMotor2.setControl(followerAligned);
+    flywheelMotor3.setControl(followerOpposed);
+    flywheelMotor4.setControl(followerOpposed);
 
     flywheel1AppliedVoltage = flywheelMotor1.getMotorVoltage();
     flywheel1StatorCurrent = flywheelMotor1.getStatorCurrent();
@@ -114,6 +126,8 @@ public class FlywheelIOCTRE implements FlywheelIO {
 
     flywheelVelocityRotationsPerSec = flywheelMotor1.getVelocity();
     flywheelAccelerationRotationsPerSecSquared = flywheelMotor1.getAcceleration();
+
+    flywheelControl = new MotionMagicVelocityVoltage(RadiansPerSecond.of(0));
   }
 
   @Override

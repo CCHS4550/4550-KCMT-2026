@@ -50,7 +50,7 @@ public class Intake extends SubsystemBase {
         intakeIO.setSpinnerVoltage(0.0);
         break;
       case INTAKE:
-        intakeIO.setSpinnerVoltage(3.0);
+        intakeIO.setSpinnerVoltage(5.0);
         intakeIO.setExtensionMotorPositionRad(
             Constants.IntakeConstants.INTAKE_BOTTOM_RADS, 100, 50);
         break;
@@ -135,7 +135,9 @@ public class Intake extends SubsystemBase {
     systemState = handleStateTransitions();
 
     updatePumpingStateMachine();
-    System.out.println("Current Intake State: " + systemState);
+
+    // System.out.println("Wanted Intake State: "+wantedState);
+    // System.out.println("Current Intake State: " + systemState);
 
     applyStates();
   }

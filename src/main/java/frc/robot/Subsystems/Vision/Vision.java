@@ -28,7 +28,7 @@ import org.littletonrobotics.junction.Logger;
 public class Vision extends SubsystemBase {
   // consumer for our vision data, how all data leaves the subsystem
 
-  private final SwerveModulePosition[] positions;
+  private SwerveModulePosition[] positions;
   // combining drive data and vision data into on singular place
   private final SwerveSubsystem drive;
   private final SwerveDrivePoseEstimator swerveDrivePoseEstimator;
@@ -106,6 +106,8 @@ public class Vision extends SubsystemBase {
 
   @Override
   public void periodic() {
+
+    positions = drive.getSwerveModulePositions();
 
     swerveDrivePoseEstimator.update(drive.getSwerveRotation(), positions);
 
@@ -228,6 +230,8 @@ public class Vision extends SubsystemBase {
     Logger.recordOutput(
         "Vision/Summary/RobotPosesRejected",
         allRobotPosesRejected.toArray(new Pose3d[allRobotPosesRejected.size()]));
+
+    Logger.recordOutput("Subsystems/Vision/Pose", getLocation());
   }
 
   /**

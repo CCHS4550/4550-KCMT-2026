@@ -11,7 +11,9 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Config.BruinRobotConfig;
 import frc.robot.Subsystems.Drive.SwerveIOCTRE;
 import frc.robot.Subsystems.Drive.SwerveSubsystem;
+import frc.robot.Subsystems.Drive.SwerveSubsystem.WantedState;
 import frc.robot.Subsystems.Indexer.Indexer;
+import frc.robot.Subsystems.Indexer.Indexer.IndexerWantedState;
 import frc.robot.Subsystems.Indexer.IndexerIOCTRE;
 import frc.robot.Subsystems.Intake.Intake;
 import frc.robot.Subsystems.Intake.IntakeIOCTRE;
@@ -52,7 +54,7 @@ public class RobotContainer {
         new Vision(
             swerveSubsystem,
             config,
-            new VisionIOPhotonvision("photonvision", config.getVisionConfigurations().get(0)));
+            new VisionIOPhotonvision("denali", config.getVisionConfigurations().get(0)));
 
     intake = new Intake(new IntakeIOCTRE(config));
     shooter =
@@ -63,23 +65,15 @@ public class RobotContainer {
             vision);
     indexer = new Indexer(new IndexerIOCTRE(config));
 
-    // swerveSubsystem =
-    //     new SwerveSubsystem(
-    //         new SwerveIOCTRE(config.getSwerveDrivetrainConstants(),
-    // config.getModuleConstants()),
-    //         config.geRobotConfig(),
-    //         controller,
-    //         0.5,
-    //         0.5 / Math.hypot(moduleConstants[0].LocationX, moduleConstants[0].LocationY));
-
     superstructure = new Superstructure(swerveSubsystem, intake, shooter, indexer, vision);
 
-    controller
-        .rightTrigger()
-        .whileTrue(
-            new InstantCommand(
-                () ->
-                    superstructure.setWantedSuperstructureState(WantedSuperstructureState.SHOOT)));
+    // controller
+    //     .rightTrigger()
+    //     .whileTrue(
+    //         new InstantCommand(
+    //             () ->
+    //
+    // superstructure.setWantedSuperstructureState(WantedSuperstructureState.SHOOT)));
 
     controller
         .leftTrigger()
@@ -88,16 +82,36 @@ public class RobotContainer {
                 () ->
                     superstructure.setWantedSuperstructureState(
                         WantedSuperstructureState.INTAKING)))
+        .onFalse(
+            new InstantCommand(
+                () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.IDLE)));
+
+    controller
+        .rightTrigger()
+        .onTrue(
+            new InstantCommand(
+                () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.ZERO)))
+        .onFalse(
+            new InstantCommand(
+                () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.IDLE)));
+
+    controller
+        .rightBumper()
+        .onTrue(new InstantCommand(() -> indexer.setWantedState(IndexerWantedState.RUNNING)))
+        .onFalse(new InstantCommand(() -> indexer.setWantedState(IndexerWantedState.IDLE)));
+
+    controller
+        .leftBumper()
         .onTrue(
             new InstantCommand(
                 () ->
-                    superstructure.setWantedSuperstructureState(
-                        WantedSuperstructureState.INTAKING)))
+                    swerveSubsystem.setTargetRotation(
+                        LaunchCalculator.getInstance().getParameters(vision).getDriveAngle())))
         .onFalse(
-            new InstantCommand(
-                () ->
-                    superstructure.setWantedSuperstructureState((WantedSuperstructureState.IDLE))));
+            new InstantCommand(() -> swerveSubsystem.setWantedState(WantedState.TELEOP_DRIVE)));
 
+    // all controls flipped (including turning)
+    // increase intake volts
     // controller
     //     .a()
     //     .onTrue(

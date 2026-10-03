@@ -1,14 +1,12 @@
 package frc.robot.Subsystems.Shooter;
 
 import static edu.wpi.first.units.Units.*;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constant.Constants;
 import frc.robot.Subsystems.Shooter.Elevation.ElevationIO;
 import frc.robot.Subsystems.Shooter.Elevation.ElevationIOInputsAutoLogged;
 import frc.robot.Subsystems.Shooter.Flywheel.FlywheelIO;
@@ -16,6 +14,7 @@ import frc.robot.Subsystems.Shooter.Flywheel.FlywheelIOInputsAutoLogged;
 import frc.robot.Subsystems.Vision.Vision;
 import frc.robot.Util.LaunchCalculator;
 import frc.robot.Util.ShooterMeasurables;
+import org.littletonrobotics.junction.Logger;
 
 public class Shooter extends SubsystemBase {
 
@@ -59,12 +58,22 @@ public class Shooter extends SubsystemBase {
 
   @Override
   public void periodic() {
-    wantedShooterMeasurables = calculator.getParameters(vision);
+    // wantedShooterMeasurables = calculator.getParameters(vision);
 
-    atGoal = atSetpoint();
+    // atGoal = atSetpoint();
+
+    flywheelIO.updateInputs(flywheelInputs);
+    elevationIO.updateInputs(elevationInputs);
+
+    Logger.processInputs("Subsystems/Shooter/Flywheel", flywheelInputs);
+    Logger.processInputs("Subsystems/Shooter/Elevation", elevationInputs);
+
+    // System.out.println("wanted=" + wantedState + " current=" + systemState);
 
     systemState = handleStateTransitions();
     applyStates();
+
+    // flywheelIO.setVoltage(Voltage.ofBaseUnits(2, Volt));
   }
 
   public ShooterSystemState handleStateTransitions() {
@@ -91,10 +100,8 @@ public class Shooter extends SubsystemBase {
         setFlywheelSpeed(RadiansPerSecond.of(wantedShooterMeasurables.getFlywheelSpeed()));
         break;
       case ZERO:
-        setElevationAngle(
-            Rotation2d.fromRadians(
-                Constants.ShooterConstants.STEEPEST_POSSIBLE_ELEVATION_ANGLE_RADIANS));
-        setFlywheelSpeed(RadiansPerSecond.of(0));
+        flywheelIO.setVelo(RadiansPerSecond.of(250));
+        // elevationIO.setElevationAngle(new Rotation2d(Degrees.of(70)));
         break;
     }
   }

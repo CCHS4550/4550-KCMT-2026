@@ -19,6 +19,7 @@ import frc.robot.Subsystems.Vision.Vision;
 import frc.robot.Util.LaunchCalculator;
 import frc.robot.Util.ShooterMeasurables;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class Superstructure extends SubsystemBase {
   private final SwerveSubsystem swerveSubsystem;
@@ -59,6 +60,13 @@ public class Superstructure extends SubsystemBase {
 
     // Clear launching parameters
     launchCalculator.clearLaunchingParameters();
+
+    Logger.recordOutput(
+        "Subsystems/Vision/Shoot Pose",
+        new Pose2d(
+            vision.getLocation().getX(),
+            vision.getLocation().getY(),
+            shooterCalcs.getDriveAngle()));
   }
 
   public void setWantedSuperstructureState(WantedSuperstructureState wantedState) {
@@ -80,8 +88,6 @@ public class Superstructure extends SubsystemBase {
       }
     }
 
-    // swervedrive state has been automatically reset for safety, but this will be overrun if we are
-    // in auto aim
     this.wantedState1 = wantedState;
   }
 
@@ -94,6 +100,7 @@ public class Superstructure extends SubsystemBase {
         intake.setWantedIntakeState(WantedIntakeState.IDLE);
         indexer.setWantedState(IndexerWantedState.IDLE);
         shooter.setWantedState(ShooterWantedState.IDLE);
+
         break;
       case STOW:
         intake.setWantedIntakeState(WantedIntakeState.STOWED);
@@ -103,19 +110,13 @@ public class Superstructure extends SubsystemBase {
         }
         break;
       case ZERO:
-        indexer.setWantedState(IndexerWantedState.IDLE);
         shooter.setWantedState(ShooterWantedState.ZERO);
+
         break;
-      case EXTEND_INTAKE:
-        intake.setWantedIntakeState(WantedIntakeState.INTAKE);
-        indexer.setWantedState(IndexerWantedState.IDLE);
-        if (shooter.getSystemState() != ShooterSystemState.ZERO) {
-          shooter.setWantedState(ShooterWantedState.IDLE);
-        }
-        break;
+
       case INTAKING:
         intake.setWantedIntakeState(WantedIntakeState.INTAKE);
-        // indexer.setWantedState(IndexerWantedState.IDLE);
+        indexer.setWantedState(IndexerWantedState.IDLE);
         // if (shooter.getSystemState() != ShooterSystemState.ZERO) {
         //   shooter.setWantedState(ShooterWantedState.IDLE);
         // }
@@ -155,19 +156,12 @@ public class Superstructure extends SubsystemBase {
         return SystemState.STOW;
       case ZERO:
         return SystemState.ZERO;
-      case EXTEND_INTAKE:
-        return SystemState.EXTEND_INTAKE;
+
       case INTAKING:
         return SystemState.INTAKING;
       case SHOOT:
-        if (shooter.atSetpoint() && swerveSubsystem.isAtDesiredRotation(0.2)) {
-          return SystemState.SHOOT;
-        }
-        return SystemState.AIMING;
-      case PRE_AIM:
-        return SystemState.PASSIVE_PRE_AIM;
-      case PRE_AIM_INTAKING:
-        return SystemState.INTAKING_PRE_AIM;
+        return SystemState.SHOOT;
+
       default:
         return SystemState.IDLE;
     }
@@ -179,20 +173,16 @@ public class Superstructure extends SubsystemBase {
     ZERO,
     EXTEND_INTAKE,
     INTAKING,
-    SHOOT,
-    PRE_AIM,
-    PRE_AIM_INTAKING
+    SHOOT
   }
 
   private enum SystemState {
     IDLE,
     STOW,
     ZERO,
-    EXTEND_INTAKE,
+
     INTAKING,
-    INTAKING_PRE_AIM,
-    PASSIVE_PRE_AIM,
-    AIMING,
+
     SHOOT
   }
 

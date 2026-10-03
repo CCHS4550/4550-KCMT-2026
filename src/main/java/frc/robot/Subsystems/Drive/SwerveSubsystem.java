@@ -16,6 +16,7 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
@@ -474,16 +475,21 @@ public class SwerveSubsystem extends SubsystemBase {
     }
   }
 
+  public SwerveModulePosition[] getSwerveModulePositions() {
+    return swerveInputs.ModulePositions;
+  }
+
   private void setSpeedModes() {
     // Speed mode selection:
-    //   Right bumper held → slow mode
-    //   Left bumper held  → fast mode
+    //   Left bumper held → slow mode
+    //   Right bumper held  → fast mode
     //   Neither           → normal mode
     // If both are somehow held simultaneously, slow mode wins.
-    if (controller.rightBumper().getAsBoolean()) {
+
+    if (controller.leftBumper().getAsBoolean()) {
       teleopVelocityCoefficient = 0.3;
       rotationVelocityCoefficient = 0.3;
-    } else if (controller.leftBumper().getAsBoolean()) {
+    } else if (controller.rightBumper().getAsBoolean()) {
       teleopVelocityCoefficient = 1.0;
       rotationVelocityCoefficient = 1.0;
     } else {
@@ -541,9 +547,17 @@ public class SwerveSubsystem extends SubsystemBase {
       return new ChassisSpeeds(0, 0, 0);
     }
 
-    double xMagnitude = MathUtil.applyDeadband(controller.getLeftY(), CONTROLLER_DEADBAND);
-    double yMagnitude = MathUtil.applyDeadband(controller.getLeftX(), CONTROLLER_DEADBAND);
-    double angularMagnitude = MathUtil.applyDeadband(controller.getRightX(), CONTROLLER_DEADBAND);
+    double flipControls = 1;
+
+    if (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue) {
+      flipControls = -1;
+    }
+    double xMagnitude =
+        flipControls * MathUtil.applyDeadband(controller.getLeftY(), CONTROLLER_DEADBAND);
+    double yMagnitude =
+        flipControls * MathUtil.applyDeadband(controller.getLeftX(), CONTROLLER_DEADBAND);
+    double angularMagnitude =
+        flipControls * MathUtil.applyDeadband(controller.getRightX(), CONTROLLER_DEADBAND);
 
     xMagnitude = Math.copySign(xMagnitude * xMagnitude, xMagnitude);
     yMagnitude = Math.copySign(yMagnitude * yMagnitude, yMagnitude);

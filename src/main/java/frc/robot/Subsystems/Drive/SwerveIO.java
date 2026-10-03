@@ -20,8 +20,8 @@ public interface SwerveIO extends SubsystemDataProcessor.IODataRefresher {
   class SwerveIOInputs {
     public Pose2d Pose = new Pose2d();
     public ChassisSpeeds Speeds = new ChassisSpeeds();
-    public SwerveModuleState[] ModuleStates;
-    public SwerveModuleState[] ModuleTargets;
+    public SwerveModuleState[] ModuleStates = new SwerveModuleState[4];
+    public SwerveModuleState[] ModuleTargets = new SwerveModuleState[4];
     public SwerveModulePosition[] ModulePositions;
     public Rotation2d RawHeading = new Rotation2d();
     public double Timestamp;

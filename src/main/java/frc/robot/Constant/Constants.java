@@ -57,7 +57,7 @@ public final class Constants {
   }
 
   public static final class ShooterConstants {
-    public static final double ELEVATION_GEAR_RATIO = 1.0 / 149.08; // fill
+    public static final double ELEVATION_GEAR_RATIO = 0.041504; // fill
     public static final double ELEVATION_ENCODER_GEAR_RATIO = 1.0 / 8.80;
     public static final double ELEVATION_POSITION_COEFFICIENT = 2 * Math.PI * ELEVATION_GEAR_RATIO;
 
@@ -72,8 +72,8 @@ public final class Constants {
 
     // public static final double ELEVATION_DEFAULT_ENCODER_READING_AT_SHALLOWEST_ANGLE = -0.48;
     public static final double ELEVATION_DEFAULT_ENCODER_READING_AT_SHALLOWEST_ANGLE = 0.35;
-    public static final double SHALLOWEST_POSSIBLE_ELEVATION_ANGLE_RADIANS = Math.toRadians(45);
-    public static final double STEEPEST_POSSIBLE_ELEVATION_ANGLE_RADIANS = Math.toRadians(78);
+    public static final double SHALLOWEST_POSSIBLE_ELEVATION_ANGLE_RADIANS = Math.toRadians(82);
+    public static final double STEEPEST_POSSIBLE_ELEVATION_ANGLE_RADIANS = Math.toRadians(90);
 
     public static final double SHOOTER_CLOSE_RADIANS_PER_SEC = 300.0;
 

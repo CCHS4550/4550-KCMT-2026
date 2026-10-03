@@ -2,14 +2,11 @@ package frc.robot.Subsystems.Shooter.Elevation;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
@@ -23,10 +20,10 @@ import frc.robot.Util.Phoenix6Util;
 
 public class ElevationIOCTRE implements ElevationIO {
   private TalonFX elevationMotor;
-  private CANcoder elevationEncoder;
   private TalonFXConfiguration elevationConfig;
-  private CANcoderConfiguration encoderConfig;
-  private MotionMagicVoltage motionMagicVoltage = new MotionMagicVoltage(0).withSlot(0);
+  private MotionMagicVoltage motionMagicVoltage =
+      new MotionMagicVoltage(Constants.ShooterConstants.SHALLOWEST_POSSIBLE_ELEVATION_ANGLE_RADIANS)
+          .withSlot(0);
   private final StatusSignal<Angle> elevationAngleRotations;
   private final StatusSignal<Voltage> elevationAppliedVolts;
   private final StatusSignal<Current> elevationSupplyCurrentAmps;
@@ -40,25 +37,10 @@ public class ElevationIOCTRE implements ElevationIO {
         new TalonFX(
             bruinRobotConfig.ELEVATION_MOTOR.getDeviceNumber(),
             bruinRobotConfig.ELEVATION_MOTOR.getBus()); // creates motor
-    elevationEncoder =
-        new CANcoder(
-            bruinRobotConfig.ELEVATION_CANCODER.getDeviceNumber(),
-            bruinRobotConfig.ELEVATION_CANCODER
-                .getBus()); // creates CANCoder, which should be connected to the motor electrically
 
     // I should probably set up these constants in like RobotConfig, but I just want to try and
     // complete this out
 
-    encoderConfig = new CANcoderConfiguration();
-    encoderConfig
-        .MagnetSensor
-        .withMagnetOffset(
-            ((-(Constants.ShooterConstants.ELEVATION_DEFAULT_ENCODER_READING_AT_SHALLOWEST_ANGLE)))
-                + (Constants.ShooterConstants.SHALLOWEST_POSSIBLE_ELEVATION_ANGLE_RADIANS
-                    / Constants.ShooterConstants.ELEVATION_ENCODER_POSITION_COEFFICIENT))
-        // 0.0)
-        .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive);
-    elevationEncoder.getConfigurator().apply(encoderConfig);
     elevationConfig = new TalonFXConfiguration();
     elevationConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
     elevationConfig.CurrentLimits.StatorCurrentLimitEnable = true;
@@ -71,7 +53,7 @@ public class ElevationIOCTRE implements ElevationIO {
     elevationConfig.Slot0.kS = bruinRobotConfig.getShooterConfig().elevationKs;
     elevationConfig.Slot0.kV = bruinRobotConfig.getShooterConfig().elevationKv;
     elevationConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    elevationConfig.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
+    elevationConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
 
     elevationConfig.MotionMagic.MotionMagicCruiseVelocity = 64.4;
     elevationConfig.MotionMagic.MotionMagicAcceleration = 75.3; // some constant idk
@@ -126,17 +108,18 @@ public class ElevationIOCTRE implements ElevationIO {
   @Override
   public void setElevationAngle(Rotation2d angle) {
 
-    if (angle.getRadians() > Constants.ShooterConstants.STEEPEST_POSSIBLE_ELEVATION_ANGLE_RADIANS) {
-      angle =
-          Rotation2d.fromRadians(
-              Constants.ShooterConstants.STEEPEST_POSSIBLE_ELEVATION_ANGLE_RADIANS);
-    }
-    if (angle.getRadians()
-        < Constants.ShooterConstants.SHALLOWEST_POSSIBLE_ELEVATION_ANGLE_RADIANS) {
-      angle =
-          Rotation2d.fromRadians(
-              Constants.ShooterConstants.SHALLOWEST_POSSIBLE_ELEVATION_ANGLE_RADIANS);
-    }
+    // if (angle.getRadians() >
+    // Constants.ShooterConstants.STEEPEST_POSSIBLE_ELEVATION_ANGLE_RADIANS) {
+    //   angle =
+    //       Rotation2d.fromRadians(
+    //           Constants.ShooterConstants.STEEPEST_POSSIBLE_ELEVATION_ANGLE_RADIANS);
+    // }
+    // if (angle.getRadians()
+    //     < Constants.ShooterConstants.SHALLOWEST_POSSIBLE_ELEVATION_ANGLE_RADIANS) {
+    //   angle =
+    //       Rotation2d.fromRadians(
+    //           Constants.ShooterConstants.SHALLOWEST_POSSIBLE_ELEVATION_ANGLE_RADIANS);
+    // }
 
     elevationMotor.setControl(
         motionMagicVoltage.withPosition(

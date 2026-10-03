@@ -305,11 +305,11 @@ public class BruinRobotConfig {
             .withElevationKd(0.1)
             .withElevationKs(0.0)
             .withElevationKv(0.5)
-            .withShooterKp(5.6)
+            .withShooterKp(0.4)
             .withShooterKi(0)
             .withShooterKd(0)
             .withShooterKs(0.0)
-            .withShooterKv(0.0);
+            .withShooterKv(0.15);
 
     intakeConfig =
         new IntakeConfig()
