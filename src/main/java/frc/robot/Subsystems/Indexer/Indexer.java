@@ -63,4 +63,8 @@ public class Indexer extends SubsystemBase {
   public void setWantedState(IndexerWantedState wantedState) {
     this.wantedState = wantedState;
   }
+
+  public double getStatorCurrent(){
+    return (indexerInputs.kickerStatorCurrent + indexerInputs.indexerStatorCurrent) / 2.0;
+  }
 }

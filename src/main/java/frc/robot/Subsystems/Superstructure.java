@@ -54,9 +54,12 @@ public class Superstructure extends SubsystemBase {
 
     shooterCalcs = launchCalculator.getParameters(vision);
     shooter.setShooterMeasurables(shooterCalcs);
+    shooter.setIndexerStatorCurrent(indexer.getStatorCurrent());
 
     systemState = handleStateTransitions();
     applyStates();
+
+
 
     // Clear launching parameters
     launchCalculator.clearLaunchingParameters();
@@ -124,12 +127,13 @@ public class Superstructure extends SubsystemBase {
 
       case SHOOT:
         swerveSubsystem.setTargetRotation(shooterCalcs.getDriveAngle());
-        intake.setWantedIntakeState(WantedIntakeState.PUMPING);
 
         shooter.setWantedState(ShooterWantedState.ACTIVE_SHOOT);
 
         if (shooter.atSetpoint()) {
           indexer.setWantedState(IndexerWantedState.RUNNING);
+          intake.setWantedIntakeState(WantedIntakeState.PUMPING);
+
         }
         break;
 

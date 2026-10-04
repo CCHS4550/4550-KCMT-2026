@@ -36,5 +36,5 @@ public interface FlywheelIO {
 
   default void setVoltage(Voltage voltage) {}
 
-  default void setVelo(AngularVelocity velo) {}
+  default void setVelo(AngularVelocity velom, double FF) {}
 }

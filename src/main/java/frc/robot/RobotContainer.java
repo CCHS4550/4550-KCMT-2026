@@ -90,25 +90,25 @@ public class RobotContainer {
         .rightTrigger()
         .onTrue(
             new InstantCommand(
-                () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.ZERO)))
+                () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.SHOOT)))
         .onFalse(
             new InstantCommand(
                 () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.IDLE)));
 
-    controller
-        .rightBumper()
-        .onTrue(new InstantCommand(() -> indexer.setWantedState(IndexerWantedState.RUNNING)))
-        .onFalse(new InstantCommand(() -> indexer.setWantedState(IndexerWantedState.IDLE)));
+    // controller
+    //     .rightBumper()
+    //     .onTrue(new InstantCommand(() -> indexer.setWantedState(IndexerWantedState.RUNNING)))
+    //     .onFalse(new InstantCommand(() -> indexer.setWantedState(IndexerWantedState.IDLE)));
 
-    controller
-        .leftBumper()
-        .onTrue(
-            new InstantCommand(
-                () ->
-                    swerveSubsystem.setTargetRotation(
-                        LaunchCalculator.getInstance().getParameters(vision).getDriveAngle())))
-        .onFalse(
-            new InstantCommand(() -> swerveSubsystem.setWantedState(WantedState.TELEOP_DRIVE)));
+    // controller
+    //     .leftBumper()
+    //     .onTrue(
+    //         new InstantCommand(
+    //             () ->
+    //                 swerveSubsystem.setTargetRotation(
+    //                     LaunchCalculator.getInstance().getParameters(vision).getDriveAngle())))
+    //     .onFalse(
+    //         new InstantCommand(() -> swerveSubsystem.setWantedState(WantedState.TELEOP_DRIVE)));
 
     // all controls flipped (including turning)
     // increase intake volts

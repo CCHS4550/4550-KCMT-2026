@@ -21,9 +21,7 @@ public class Intake extends SubsystemBase {
   public enum SystemState {
     IDLE,
     STOWED,
-    INTAKE,
-    PUMP_UP,
-    PUMP_DOWN
+    INTAKE
   }
 
   private SystemState systemState = SystemState.STOWED;
@@ -43,7 +41,7 @@ public class Intake extends SubsystemBase {
       case STOWED:
         intakeIO.setExtensionVoltage(0.0);
         intakeIO.setExtensionMotorPositionRad(
-            Constants.IntakeConstants.INTAKE_STOWED_RADS, 100, 50);
+            Constants.IntakeConstants.INTAKE_STOWED_RADS, 75, 25);
         break;
       case IDLE:
         intakeIO.setExtensionVoltage(0.0);
@@ -53,16 +51,6 @@ public class Intake extends SubsystemBase {
         intakeIO.setSpinnerVoltage(5.0);
         intakeIO.setExtensionMotorPositionRad(
             Constants.IntakeConstants.INTAKE_BOTTOM_RADS, 100, 50);
-        break;
-      case PUMP_DOWN:
-        intakeIO.setSpinnerVoltage(5.0);
-        intakeIO.setExtensionMotorPositionRad(
-            Constants.IntakeConstants.INTAKE_BOTTOM_PUMP_RADS, 100, 50);
-        break;
-      case PUMP_UP:
-        intakeIO.setSpinnerVoltage(5.0);
-        intakeIO.setExtensionMotorPositionRad(
-            Constants.IntakeConstants.INTAKE_TOP_PUMP_RADS, 100, 50);
         break;
       default:
         intakeIO.setExtensionVoltage(0.0);
@@ -82,10 +70,7 @@ public class Intake extends SubsystemBase {
       case PUMPING:
         // If we are coming from outside into PUMPING, start with PUMP_DOWN.
         // Otherwise, keep whatever internal pump state we are currently executing.
-        if (systemState != SystemState.PUMP_DOWN && systemState != SystemState.PUMP_UP) {
-          return SystemState.PUMP_DOWN;
-        }
-        return systemState;
+        return SystemState.STOWED;
       default:
         return SystemState.IDLE;
     }
@@ -99,32 +84,6 @@ public class Intake extends SubsystemBase {
     this.wantedState = state;
   }
 
-  @AutoLogOutput(key = "Subsystems/Intake/AtWantedAngle")
-  private void updatePumpingStateMachine() {
-    // Only run this logic if the user actually wants to pump
-    if (wantedState != WantedIntakeState.PUMPING) {
-      return;
-    }
-
-    // Check if we reached the bottom, then switch to going up
-    if (systemState == SystemState.PUMP_DOWN) {
-      if (MathUtil.isNear(
-          Constants.IntakeConstants.INTAKE_BOTTOM_PUMP_RADS,
-          inputs.extensionPosRadians,
-          intakeTolerance)) {
-        systemState = SystemState.PUMP_UP;
-      }
-    }
-    // Check if we reached the top, then switch back to going down
-    else if (systemState == SystemState.PUMP_UP) {
-      if (MathUtil.isNear(
-          Constants.IntakeConstants.INTAKE_TOP_PUMP_RADS,
-          inputs.extensionPosRadians,
-          intakeTolerance)) {
-        systemState = SystemState.PUMP_DOWN;
-      }
-    }
-  }
 
   @Override
   public void periodic() {
@@ -133,9 +92,6 @@ public class Intake extends SubsystemBase {
     Logger.recordOutput("Subsystems/Intake/SystemState", systemState);
     Logger.recordOutput("Subsystems/Intake/DesiredState", wantedState);
     systemState = handleStateTransitions();
-
-    updatePumpingStateMachine();
-
     // System.out.println("Wanted Intake State: "+wantedState);
     // System.out.println("Current Intake State: " + systemState);
 
