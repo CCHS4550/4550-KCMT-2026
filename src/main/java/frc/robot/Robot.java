@@ -150,7 +150,7 @@ public class Robot extends LoggedRobot {
   public void teleopInit() {
     if (autonomousCommand != null) {
       autonomousCommand.cancel();
-       robotContainer.getSwerveSubsystem().setWantedState(WantedState.TELEOP_DRIVE);
+      robotContainer.getSwerveSubsystem().setWantedState(WantedState.TELEOP_DRIVE);
     }
   }
 

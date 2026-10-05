@@ -1,10 +1,8 @@
 package frc.robot.Subsystems.Intake;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constant.Constants;
-import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.Logger;
 
 public class Intake extends SubsystemBase {
@@ -40,8 +38,7 @@ public class Intake extends SubsystemBase {
     switch (systemState) {
       case STOWED:
         intakeIO.setExtensionVoltage(0.0);
-        intakeIO.setExtensionMotorPositionRad(
-            Constants.IntakeConstants.INTAKE_STOWED_RADS, 75, 25);
+        intakeIO.setExtensionMotorPositionRad(Constants.IntakeConstants.INTAKE_STOWED_RADS, 75, 25);
         break;
       case IDLE:
         intakeIO.setExtensionVoltage(0.0);
@@ -83,7 +80,6 @@ public class Intake extends SubsystemBase {
     if (state == this.wantedState) return;
     this.wantedState = state;
   }
-
 
   @Override
   public void periodic() {

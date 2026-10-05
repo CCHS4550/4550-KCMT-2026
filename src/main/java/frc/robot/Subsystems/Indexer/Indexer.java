@@ -2,6 +2,7 @@ package frc.robot.Subsystems.Indexer;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.Logger;
 
 public class Indexer extends SubsystemBase {
 
@@ -31,6 +32,8 @@ public class Indexer extends SubsystemBase {
     indexerIO.updateInputs(indexerInputs);
 
     systemState = handleStateTransitions();
+
+    Logger.processInputs("Subsystems/Indexer", indexerInputs);
 
     applyStates();
   }
@@ -64,7 +67,7 @@ public class Indexer extends SubsystemBase {
     this.wantedState = wantedState;
   }
 
-  public double getStatorCurrent(){
+  public double getStatorCurrent() {
     return (indexerInputs.kickerStatorCurrent + indexerInputs.indexerStatorCurrent) / 2.0;
   }
 }

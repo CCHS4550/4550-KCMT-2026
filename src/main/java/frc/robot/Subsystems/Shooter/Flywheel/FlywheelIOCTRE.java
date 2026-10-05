@@ -181,6 +181,7 @@ public class FlywheelIOCTRE implements FlywheelIO {
 
   @Override
   public void setVelo(AngularVelocity velo, double FF) {
-    flywheelMotor1.setControl(flywheelControl.withVelocity(velo).withSlot(0).withEnableFOC(true).withFeedForward(FF));
+    flywheelMotor1.setControl(
+        flywheelControl.withVelocity(velo).withSlot(0).withEnableFOC(true).withFeedForward(FF));
   }
 }
