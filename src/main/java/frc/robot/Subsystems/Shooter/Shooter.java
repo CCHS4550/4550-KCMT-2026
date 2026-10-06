@@ -35,8 +35,7 @@ public class Shooter extends SubsystemBase {
   private double indexerStatorCurrent = 0.0;
   private double indexerBasedFeedForward = 0.0;
 
-  private final LinearFilter indexerCurrentFilter =
-    LinearFilter.singlePoleIIR(0.1, 0.02);
+  private final LinearFilter indexerCurrentFilter = LinearFilter.singlePoleIIR(0.1, 0.02);
 
   private ShooterMeasurables wantedShooterMeasurables;
 
@@ -134,16 +133,15 @@ public class Shooter extends SubsystemBase {
     return systemState;
   }
 
-  public void setIndexerStatorCurrent (double current){
+  public void setIndexerStatorCurrent(double current) {
     indexerStatorCurrent = current;
   }
 
   private double calculateIndexerFeedForward() {
-    double filteredCurrent =
-        indexerCurrentFilter.calculate(indexerStatorCurrent);
+    double filteredCurrent = indexerCurrentFilter.calculate(indexerStatorCurrent);
 
     if (filteredCurrent <= Constants.ShooterConstants.INDEXER_CURRENT_THRESHOLD) {
-        return 0.0;
+      return 0.0;
     }
 
     double feedForward =
@@ -151,7 +149,7 @@ public class Shooter extends SubsystemBase {
             * Constants.ShooterConstants.INDEXER_CURRENT_TO_FF;
 
     return Math.min(feedForward, Constants.ShooterConstants.INDEXER_FEED_FORWARD_MAX);
-}
+  }
 
   public boolean atSetpoint() {
     return MathUtil.isNear(

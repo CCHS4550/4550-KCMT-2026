@@ -59,8 +59,6 @@ public class Superstructure extends SubsystemBase {
     systemState = handleStateTransitions();
     applyStates();
 
-
-
     // Clear launching parameters
     launchCalculator.clearLaunchingParameters();
 
@@ -133,7 +131,6 @@ public class Superstructure extends SubsystemBase {
         if (shooter.atSetpoint()) {
           indexer.setWantedState(IndexerWantedState.RUNNING);
           intake.setWantedIntakeState(WantedIntakeState.PUMPING);
-
         }
         break;
 

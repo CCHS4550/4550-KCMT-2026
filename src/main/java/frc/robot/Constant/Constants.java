@@ -100,7 +100,7 @@ public final class Constants {
     // using a crude linear scalar to convert indexer stator current to FF output
     public static final double INDEXER_CURRENT_TO_FF = 0.54;
     // if FF > than this constant, just return FF = INDEXER_FEED_FORWARD_MAX
-    public static final double INDEXER_FEED_FORWARD_MAX = 27.0;
+    public static final double INDEXER_FEED_FORWARD_MAX = 127.0;
   }
 
   public static final class IntakeConstants {

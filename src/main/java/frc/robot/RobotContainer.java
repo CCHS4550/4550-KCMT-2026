@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Config.BruinRobotConfig;
 import frc.robot.Subsystems.Drive.SwerveIOCTRE;
 import frc.robot.Subsystems.Drive.SwerveSubsystem;
-import frc.robot.Subsystems.Drive.SwerveSubsystem.WantedState;
 import frc.robot.Subsystems.Indexer.Indexer;
 import frc.robot.Subsystems.Indexer.Indexer.IndexerWantedState;
 import frc.robot.Subsystems.Indexer.IndexerIOCTRE;
@@ -75,30 +74,31 @@ public class RobotContainer {
     //
     // superstructure.setWantedSuperstructureState(WantedSuperstructureState.SHOOT)));
 
-    controller
-        .leftTrigger()
-        .whileTrue(
-            new InstantCommand(
-                () ->
-                    superstructure.setWantedSuperstructureState(
-                        WantedSuperstructureState.INTAKING)))
-        .onFalse(
-            new InstantCommand(
-                () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.IDLE)));
+    // controller
+    //     .leftTrigger()
+    //     .whileTrue(
+    //         new InstantCommand(
+    //             () ->
+    //                 superstructure.setWantedSuperstructureState(
+    //                     WantedSuperstructureState.INTAKING)))
+    //     .onFalse(
+    //         new InstantCommand(
+    //             () ->
+    // superstructure.setWantedSuperstructureState(WantedSuperstructureState.IDLE)));
 
     controller
         .rightTrigger()
         .onTrue(
             new InstantCommand(
-                () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.SHOOT)))
+                () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.ZERO)))
         .onFalse(
             new InstantCommand(
                 () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.IDLE)));
 
-    // controller
-    //     .rightBumper()
-    //     .onTrue(new InstantCommand(() -> indexer.setWantedState(IndexerWantedState.RUNNING)))
-    //     .onFalse(new InstantCommand(() -> indexer.setWantedState(IndexerWantedState.IDLE)));
+    controller
+        .rightBumper()
+        .onTrue(new InstantCommand(() -> indexer.setWantedState(IndexerWantedState.RUNNING)))
+        .onFalse(new InstantCommand(() -> indexer.setWantedState(IndexerWantedState.IDLE)));
 
     // controller
     //     .leftBumper()
