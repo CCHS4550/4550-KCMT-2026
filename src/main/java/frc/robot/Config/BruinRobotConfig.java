@@ -309,7 +309,7 @@ public class BruinRobotConfig {
             .withShooterKi(0)
             .withShooterKd(0)
             .withShooterKs(0.0)
-            .withShooterKv(0.15);
+            .withShooterKv(0.14);
 
     intakeConfig =
         new IntakeConfig()

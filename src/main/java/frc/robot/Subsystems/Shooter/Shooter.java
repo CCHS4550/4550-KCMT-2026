@@ -3,6 +3,7 @@ package frc.robot.Subsystems.Shooter;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.Debouncer;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -36,6 +37,7 @@ public class Shooter extends SubsystemBase {
   private double indexerBasedFeedForward = 0.0;
 
   private final LinearFilter indexerCurrentFilter = LinearFilter.singlePoleIIR(0.1, 0.02);
+  private final Debouncer indexerDebouncer = new Debouncer(0.2, Debouncer.DebounceType.kRising);
 
   private ShooterMeasurables wantedShooterMeasurables;
 
@@ -74,6 +76,7 @@ public class Shooter extends SubsystemBase {
 
     Logger.processInputs("Subsystems/Shooter/Flywheel", flywheelInputs);
     Logger.processInputs("Subsystems/Shooter/Elevation", elevationInputs);
+    Logger.recordOutput("Subsystems/Shooter/Indexer FF", calculateIndexerFeedForward());
 
     // System.out.println("wanted=" + wantedState + " current=" + systemState);
 
@@ -108,7 +111,7 @@ public class Shooter extends SubsystemBase {
         break;
       case ZERO:
         flywheelIO.setVelo(RadiansPerSecond.of(250), calculateIndexerFeedForward());
-        // elevationIO.setElevationAngle(new Rotation2d(Degrees.of(70)));
+        elevationIO.setElevationAngle(new Rotation2d(Degrees.of(88)));
         break;
     }
   }
@@ -140,7 +143,11 @@ public class Shooter extends SubsystemBase {
   private double calculateIndexerFeedForward() {
     double filteredCurrent = indexerCurrentFilter.calculate(indexerStatorCurrent);
 
-    if (filteredCurrent <= Constants.ShooterConstants.INDEXER_CURRENT_THRESHOLD) {
+    boolean indexerLoaded =
+        indexerDebouncer.calculate(
+            filteredCurrent > Constants.ShooterConstants.INDEXER_CURRENT_THRESHOLD);
+
+    if (filteredCurrent <= Constants.ShooterConstants.INDEXER_CURRENT_THRESHOLD || !indexerLoaded) {
       return 0.0;
     }
 
@@ -156,7 +163,7 @@ public class Shooter extends SubsystemBase {
             flywheelInputs.flywheelVelocityRadPerSec,
             wantedShooterMeasurables.getFlywheelSpeed(),
             wantedShooterMeasurables.getFlywheelSpeed()
-                * 0.05) // Allowance is 5% of wanted velocity
+                * 0.02) // Allowance is 5% of wanted velocity
         && MathUtil.isNear(
             elevationInputs.elevationAngle.getRadians(),
             wantedShooterMeasurables.getHoodAngle(),

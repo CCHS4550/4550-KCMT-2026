@@ -1,5 +1,6 @@
 package frc.robot.Subsystems.Intake;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constant.Constants;
@@ -38,16 +39,20 @@ public class Intake extends SubsystemBase {
     switch (systemState) {
       case STOWED:
         intakeIO.setExtensionVoltage(0.0);
-        intakeIO.setExtensionMotorPositionRad(Constants.IntakeConstants.INTAKE_STOWED_RADS, 75, 25);
+
+        intakeIO.setExtensionMotorPositionRad(Constants.IntakeConstants.INTAKE_STOWED_RADS, 75, 50);
         break;
       case IDLE:
         intakeIO.setExtensionVoltage(0.0);
         intakeIO.setSpinnerVoltage(0.0);
         break;
       case INTAKE:
-        intakeIO.setSpinnerVoltage(5.0);
-        intakeIO.setExtensionMotorPositionRad(
-            Constants.IntakeConstants.INTAKE_BOTTOM_RADS, 100, 50);
+        intakeIO.setSpinnerVoltage(3.0);
+        if (!MathUtil.isNear(
+            Constants.IntakeConstants.INTAKE_BOTTOM_RADS, inputs.extensionPosRadians, 0.5)) {
+          intakeIO.setExtensionMotorPositionRad(
+              Constants.IntakeConstants.INTAKE_BOTTOM_RADS, 100, 50);
+        }
         break;
       default:
         intakeIO.setExtensionVoltage(0.0);

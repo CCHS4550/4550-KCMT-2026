@@ -52,6 +52,10 @@ public class Superstructure extends SubsystemBase {
     // Log launching parameters TODO: fix logging bugs later
     var launchCalculator = LaunchCalculator.getInstance();
 
+    if (DriverStation.isDisabled()) {
+      setWantedSuperstructureState(WantedSuperstructureState.IDLE);
+    }
+
     shooterCalcs = launchCalculator.getParameters(vision);
     shooter.setShooterMeasurables(shooterCalcs);
     shooter.setIndexerStatorCurrent(indexer.getStatorCurrent());
@@ -126,9 +130,12 @@ public class Superstructure extends SubsystemBase {
       case SHOOT:
         swerveSubsystem.setTargetRotation(shooterCalcs.getDriveAngle());
 
-        shooter.setWantedState(ShooterWantedState.ACTIVE_SHOOT);
+        if (swerveSubsystem.isAtDesiredRotation()) {
 
-        if (shooter.atSetpoint()) {
+          shooter.setWantedState(ShooterWantedState.ACTIVE_SHOOT);
+        }
+
+        if (shooter.atSetpoint() && swerveSubsystem.isAtDesiredRotation()) {
           indexer.setWantedState(IndexerWantedState.RUNNING);
           intake.setWantedIntakeState(WantedIntakeState.PUMPING);
         }

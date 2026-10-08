@@ -120,20 +120,20 @@ public class LaunchCalculator {
     passingMaxDistance = 17.16;
     phaseDelay = 0.03;
 
-    hoodAngleMap.put(0.96, Rotation2d.fromDegrees(10.0));
-    hoodAngleMap.put(1.16, Rotation2d.fromDegrees(12.0));
-    hoodAngleMap.put(1.58, Rotation2d.fromDegrees(14.0));
-    hoodAngleMap.put(2.07, Rotation2d.fromDegrees(18.5));
-    hoodAngleMap.put(2.37, Rotation2d.fromDegrees(22.0));
-    hoodAngleMap.put(2.47, Rotation2d.fromDegrees(23.0));
-    hoodAngleMap.put(2.70, Rotation2d.fromDegrees(24.0));
-    hoodAngleMap.put(2.94, Rotation2d.fromDegrees(25.0));
-    hoodAngleMap.put(3.48, Rotation2d.fromDegrees(27.0));
-    hoodAngleMap.put(3.92, Rotation2d.fromDegrees(32.0));
-    hoodAngleMap.put(4.35, Rotation2d.fromDegrees(34.0));
-    hoodAngleMap.put(4.84, Rotation2d.fromDegrees(38.0));
+    hoodAngleMap.put(Units.inchesToMeters(80.25), Rotation2d.fromDegrees(88.0));
+    // hoodAngleMap.put(1.16, Rotation2d.fromDegrees(12.0));
+    // hoodAngleMap.put(1.58, Rotation2d.fromDegrees(14.0));
+    // hoodAngleMap.put(2.07, Rotation2d.fromDegrees(18.5));
+    // hoodAngleMap.put(2.37, Rotation2d.fromDegrees(22.0));
+    // hoodAngleMap.put(2.47, Rotation2d.fromDegrees(23.0));
+    // hoodAngleMap.put(2.70, Rotation2d.fromDegrees(24.0));
+    // hoodAngleMap.put(2.94, Rotation2d.fromDegrees(25.0));
+    // hoodAngleMap.put(3.48, Rotation2d.fromDegrees(27.0));
+    // hoodAngleMap.put(3.92, Rotation2d.fromDegrees(32.0));
+    // hoodAngleMap.put(4.35, Rotation2d.fromDegrees(34.0));
+    // hoodAngleMap.put(4.84, Rotation2d.fromDegrees(38.0));
 
-    flywheelSpeedMap.put(0.96, 150.0);
+    flywheelSpeedMap.put(Units.inchesToMeters(80.25), 250.0);
     flywheelSpeedMap.put(1.16, 155.0);
     flywheelSpeedMap.put(1.58, 160.0);
     flywheelSpeedMap.put(2.07, 165.0);

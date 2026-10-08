@@ -96,9 +96,9 @@ public final class Constants {
     // Constants for Indexer Stator Current to Shooter FF
 
     // if current is below this threshold, don't do anything
-    public static final double INDEXER_CURRENT_THRESHOLD = 100.0;
+    public static final double INDEXER_CURRENT_THRESHOLD = 25.0;
     // using a crude linear scalar to convert indexer stator current to FF output
-    public static final double INDEXER_CURRENT_TO_FF = 0.54;
+    public static final double INDEXER_CURRENT_TO_FF = 0.09;
     // if FF > than this constant, just return FF = INDEXER_FEED_FORWARD_MAX
     public static final double INDEXER_FEED_FORWARD_MAX = 127.0;
   }

@@ -257,6 +257,10 @@ public class Vision extends SubsystemBase {
     return currentPosition;
   }
 
+  public SwerveDrivePoseEstimator getPoseEstimator() {
+    return swerveDrivePoseEstimator;
+  }
+
   // only consumer is the questnav currently, but keep this information incase we need to plug
   // vision into a pose estimator later
   @FunctionalInterface

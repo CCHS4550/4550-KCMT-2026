@@ -3,6 +3,7 @@ package frc.robot.Config;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.util.Units;
 
 public class VisionConfig {
   public enum VisionType {
@@ -15,10 +16,10 @@ public class VisionConfig {
 
   public double visionMountingRollRadians = 0;
   public double visionMountingYawRadians = 0;
-  public double visionMountingPitchRadians = 0;
-  public double visionHeightOffsetMeters = 0;
-  public double visionLengthOffsetMeters = 0;
-  public double visionWidthOffsetMeters = 0;
+  public double visionMountingPitchRadians = Units.degreesToRadians(30.0000000000000000000000000000000000000000);
+  public double visionHeightOffsetMeters = Units.inchesToMeters(7.457788 - -1.165626 + 4.00);
+  public double visionLengthOffsetMeters = Units.inchesToMeters(-12.879904);
+  public double visionWidthOffsetMeters = Units.inchesToMeters(-7.226392);
   public VisionType visionType = VisionType.NONE;
 
   public double visionDistanceScalarValue = 0;

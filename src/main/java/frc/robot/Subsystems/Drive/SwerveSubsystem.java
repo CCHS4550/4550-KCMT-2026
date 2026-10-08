@@ -19,6 +19,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -27,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constant.Constants;
 import frc.robot.Constant.FieldConstants;
 import frc.robot.Robotstate;
+import frc.robot.Subsystems.Vision.Vision;
 import frc.robot.Util.SubsystemDataProcessor;
 import frc.robot.Util.SysIdMechanism;
 import java.util.Optional;
@@ -48,6 +50,8 @@ public class SwerveSubsystem extends SubsystemBase {
   public static final double DRIVE_TO_POINT_STATIC_FRICTION_CONSTANT = 0.02;
 
   public static final double ROTATION_ERROR_MARGIN_FOR_ROTATION_LOCK_DEGREES = 10.0;
+
+  private Vision vision;
 
   public double maxVelocityOutputForDriveToPoint = Units.feetToMeters(10.0);
 
@@ -584,6 +588,10 @@ public class SwerveSubsystem extends SubsystemBase {
         swerveInputs.Pose.getRotation().plus(skewCompensationFactor));
   }
 
+  public void setVision(Vision vision) {
+    this.vision = vision;
+  }
+
   public void resetTranslationAndRotation(Pose2d pose2d) {
     resetTranslation(pose2d);
     resetRotation(pose2d.getRotation());
@@ -621,7 +629,7 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public boolean isAtDesiredRotation() {
-    return isAtDesiredRotation(Units.degreesToRadians(10.0));
+    return isAtDesiredRotation(Units.degreesToRadians(0.5));
   }
 
   public boolean isAtDesiredRotation(double tolerance) {
@@ -686,6 +694,19 @@ public class SwerveSubsystem extends SubsystemBase {
                 .getNorm());
     Logger.recordOutput("Choreo/DistanceFromEndpoint", distance);
     return distance;
+  }
+
+  public void resetPigeonOrientationForDriving() {
+    boolean isble = DriverStation.getAlliance().get() == Alliance.Blue;
+
+    vision
+        .getPoseEstimator()
+        .resetPosition(
+            getSwerveRotation(),
+            swerveInputs.ModulePositions,
+            new Pose2d(
+                vision.getLocation().getTranslation(),
+                isble ? new Rotation2d() : new Rotation2d().plus(Rotation2d.fromRadians(Math.PI))));
   }
 
   /** Adds a new timestamped vision measurement. */

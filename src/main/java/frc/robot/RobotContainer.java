@@ -11,10 +11,12 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Config.BruinRobotConfig;
 import frc.robot.Subsystems.Drive.SwerveIOCTRE;
 import frc.robot.Subsystems.Drive.SwerveSubsystem;
+import frc.robot.Subsystems.Drive.SwerveSubsystem.WantedState;
 import frc.robot.Subsystems.Indexer.Indexer;
 import frc.robot.Subsystems.Indexer.Indexer.IndexerWantedState;
 import frc.robot.Subsystems.Indexer.IndexerIOCTRE;
 import frc.robot.Subsystems.Intake.Intake;
+import frc.robot.Subsystems.Intake.Intake.WantedIntakeState;
 import frc.robot.Subsystems.Intake.IntakeIOCTRE;
 import frc.robot.Subsystems.Shooter.Elevation.ElevationIOCTRE;
 import frc.robot.Subsystems.Shooter.Flywheel.FlywheelIOCTRE;
@@ -64,6 +66,8 @@ public class RobotContainer {
             vision);
     indexer = new Indexer(new IndexerIOCTRE(config));
 
+    swerveSubsystem.setVision(vision);
+
     superstructure = new Superstructure(swerveSubsystem, intake, shooter, indexer, vision);
 
     // controller
@@ -74,23 +78,22 @@ public class RobotContainer {
     //
     // superstructure.setWantedSuperstructureState(WantedSuperstructureState.SHOOT)));
 
-    // controller
-    //     .leftTrigger()
-    //     .whileTrue(
-    //         new InstantCommand(
-    //             () ->
-    //                 superstructure.setWantedSuperstructureState(
-    //                     WantedSuperstructureState.INTAKING)))
-    //     .onFalse(
-    //         new InstantCommand(
-    //             () ->
-    // superstructure.setWantedSuperstructureState(WantedSuperstructureState.IDLE)));
+    controller
+        .leftTrigger()
+        .whileTrue(
+            new InstantCommand(
+                () ->
+                    superstructure.setWantedSuperstructureState(
+                        WantedSuperstructureState.INTAKING)))
+        .onFalse(
+            new InstantCommand(
+                () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.IDLE)));
 
     controller
         .rightTrigger()
         .onTrue(
             new InstantCommand(
-                () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.ZERO)))
+                () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.SHOOT)))
         .onFalse(
             new InstantCommand(
                 () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.IDLE)));
@@ -100,15 +103,24 @@ public class RobotContainer {
         .onTrue(new InstantCommand(() -> indexer.setWantedState(IndexerWantedState.RUNNING)))
         .onFalse(new InstantCommand(() -> indexer.setWantedState(IndexerWantedState.IDLE)));
 
-    // controller
-    //     .leftBumper()
-    //     .onTrue(
-    //         new InstantCommand(
-    //             () ->
-    //                 swerveSubsystem.setTargetRotation(
-    //                     LaunchCalculator.getInstance().getParameters(vision).getDriveAngle())))
-    //     .onFalse(
-    //         new InstantCommand(() -> swerveSubsystem.setWantedState(WantedState.TELEOP_DRIVE)));
+    controller
+        .a()
+        .onTrue(new InstantCommand(() -> swerveSubsystem.resetPigeonOrientationForDriving()));
+
+    controller
+        .leftBumper()
+        .onTrue(
+            new InstantCommand(
+                () ->
+                    swerveSubsystem.setTargetRotation(
+                        LaunchCalculator.getInstance().getParameters(vision).getDriveAngle())))
+        .onFalse(
+            new InstantCommand(() -> swerveSubsystem.setWantedState(WantedState.TELEOP_DRIVE)));
+
+    controller
+        .b()
+        .onTrue(new InstantCommand(() -> intake.setWantedIntakeState(WantedIntakeState.PUMPING)))
+        .onFalse(new InstantCommand(() -> intake.setWantedIntakeState(WantedIntakeState.IDLE)));
 
     // all controls flipped (including turning)
     // increase intake volts
