@@ -72,7 +72,7 @@ public final class Constants {
 
     // public static final double ELEVATION_DEFAULT_ENCODER_READING_AT_SHALLOWEST_ANGLE = -0.48;
     public static final double ELEVATION_DEFAULT_ENCODER_READING_AT_SHALLOWEST_ANGLE = 0.35;
-    public static final double SHALLOWEST_POSSIBLE_ELEVATION_ANGLE_RADIANS = Math.toRadians(82);
+    public static final double SHALLOWEST_POSSIBLE_ELEVATION_ANGLE_RADIANS = Math.toRadians(65.9);
     public static final double STEEPEST_POSSIBLE_ELEVATION_ANGLE_RADIANS = Math.toRadians(90);
 
     public static final double SHOOTER_CLOSE_RADIANS_PER_SEC = 300.0;
@@ -98,7 +98,7 @@ public final class Constants {
     // if current is below this threshold, don't do anything
     public static final double INDEXER_CURRENT_THRESHOLD = 25.0;
     // using a crude linear scalar to convert indexer stator current to FF output
-    public static final double INDEXER_CURRENT_TO_FF = 0.09;
+    public static final double INDEXER_CURRENT_TO_FF = 0.13;
     // if FF > than this constant, just return FF = INDEXER_FEED_FORWARD_MAX
     public static final double INDEXER_FEED_FORWARD_MAX = 127.0;
   }

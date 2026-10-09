@@ -121,6 +121,9 @@ public class LaunchCalculator {
     phaseDelay = 0.03;
 
     hoodAngleMap.put(Units.inchesToMeters(80.25), Rotation2d.fromDegrees(88.0));
+    hoodAngleMap.put(Units.inchesToMeters(110.25), Rotation2d.fromDegrees(75.0));
+    hoodAngleMap.put(Units.inchesToMeters(135.25), Rotation2d.fromDegrees(70.0));
+    hoodAngleMap.put(Units.inchesToMeters(150.25), Rotation2d.fromDegrees(68.0));
     // hoodAngleMap.put(1.16, Rotation2d.fromDegrees(12.0));
     // hoodAngleMap.put(1.58, Rotation2d.fromDegrees(14.0));
     // hoodAngleMap.put(2.07, Rotation2d.fromDegrees(18.5));
@@ -134,17 +137,9 @@ public class LaunchCalculator {
     // hoodAngleMap.put(4.84, Rotation2d.fromDegrees(38.0));
 
     flywheelSpeedMap.put(Units.inchesToMeters(80.25), 250.0);
-    flywheelSpeedMap.put(1.16, 155.0);
-    flywheelSpeedMap.put(1.58, 160.0);
-    flywheelSpeedMap.put(2.07, 165.0);
-    flywheelSpeedMap.put(2.37, 170.0);
-    flywheelSpeedMap.put(2.47, 170.0);
-    flywheelSpeedMap.put(2.70, 170.0);
-    flywheelSpeedMap.put(2.94, 175.0);
-    flywheelSpeedMap.put(3.48, 175.0);
-    flywheelSpeedMap.put(3.92, 180.0);
-    flywheelSpeedMap.put(4.35, 185.0);
-    flywheelSpeedMap.put(4.84, 190.0);
+    flywheelSpeedMap.put(Units.inchesToMeters(110.25), 280.0);
+    flywheelSpeedMap.put(Units.inchesToMeters(135.25), 320.0);
+    flywheelSpeedMap.put(Units.inchesToMeters(150.25), 350.0);
 
     timeOfFlightMap.put(5.68, 1.16);
     timeOfFlightMap.put(4.55, 1.12);

@@ -307,7 +307,7 @@ public class BruinRobotConfig {
             .withElevationKv(0.5)
             .withShooterKp(0.4)
             .withShooterKi(0)
-            .withShooterKd(0)
+            .withShooterKd(0.0077)
             .withShooterKs(0.0)
             .withShooterKv(0.14);
 

@@ -153,9 +153,9 @@ public class Superstructure extends SubsystemBase {
   }
 
   private SystemState handleStateTransitions() {
-    if (wantedState1 == WantedSuperstructureState.SHOOT && !shooterCalcs.getIsValid()) {
-      return SystemState.IDLE;
-    }
+    // if (wantedState1 == WantedSuperstructureState.SHOOT && !shooterCalcs.getIsValid()) {
+    //   return SystemState.IDLE;
+    // }
 
     switch (wantedState1) {
       case IDLE:
@@ -167,6 +167,7 @@ public class Superstructure extends SubsystemBase {
 
       case INTAKING:
         return SystemState.INTAKING;
+
       case SHOOT:
         return SystemState.SHOOT;
 

@@ -110,8 +110,8 @@ public class Shooter extends SubsystemBase {
         setFlywheelSpeed(RadiansPerSecond.of(wantedShooterMeasurables.getFlywheelSpeed()));
         break;
       case ZERO:
-        flywheelIO.setVelo(RadiansPerSecond.of(250), calculateIndexerFeedForward());
-        elevationIO.setElevationAngle(new Rotation2d(Degrees.of(88)));
+        flywheelIO.setVelo(RadiansPerSecond.of(410), calculateIndexerFeedForward());
+        elevationIO.setElevationAngle(new Rotation2d(Degrees.of(66)));
         break;
     }
   }
