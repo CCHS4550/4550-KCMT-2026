@@ -17,7 +17,7 @@ public class VisionConfig {
   public double visionMountingRollRadians = 0;
   public double visionMountingYawRadians = 0;
   public double visionMountingPitchRadians =
-      Units.degreesToRadians(30.0000000000000000000000000000000000000000);
+      Units.degreesToRadians(60.0000000000000000000000000000000000000000);
   public double visionHeightOffsetMeters = Units.inchesToMeters(7.457788 - -1.165626 + 4.00);
   public double visionLengthOffsetMeters = Units.inchesToMeters(-12.879904);
   public double visionWidthOffsetMeters = Units.inchesToMeters(-7.226392);
