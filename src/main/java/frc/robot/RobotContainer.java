@@ -79,6 +79,11 @@ public class RobotContainer {
     // superstructure.setWantedSuperstructureState(WantedSuperstructureState.SHOOT)));
 
     controller
+        .x()
+        .onTrue(new InstantCommand(()-> superstructure.setWantedSuperstructureState(WantedSuperstructureState.ZERO)))
+        .onFalse(new InstantCommand(()-> superstructure.setWantedSuperstructureState(WantedSuperstructureState.IDLE)));
+
+    controller
         .leftTrigger()
         .whileTrue(
             new InstantCommand(
