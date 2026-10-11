@@ -110,8 +110,8 @@ public class SwerveSubsystem extends SubsystemBase {
   private final double maxVelocity;
   private final double maxAngularVelocity;
 
-  private double teleopVelocityCoefficient = 1.0;
-  private double rotationVelocityCoefficient = 1.0;
+  private double teleopVelocityCoefficient = 1.4;
+  private double rotationVelocityCoefficient = 1.4;
   private double maximumAngularVelocityForDriveToPoint = Double.NaN;
 
   private SysIdRoutine wheelRadiuSysIdRoutine =
@@ -377,7 +377,7 @@ public class SwerveSubsystem extends SubsystemBase {
         double ff = 0.5; // example
         double ffDirection = Math.signum(error) * ff;
 
-        double kP = 0.3;
+        double kP = 0.4;
         if (error > 3.075 || error < -3.075) {
           kP = 0.0;
           ffDirection = 0.0;
@@ -561,7 +561,7 @@ public class SwerveSubsystem extends SubsystemBase {
     double yMagnitude =
         flipControls * MathUtil.applyDeadband(controller.getLeftX(), CONTROLLER_DEADBAND);
     double angularMagnitude =
-        flipControls * MathUtil.applyDeadband(controller.getRightX(), CONTROLLER_DEADBAND);
+        -1 * MathUtil.applyDeadband(controller.getRightX(), CONTROLLER_DEADBAND);
 
     xMagnitude = Math.copySign(xMagnitude * xMagnitude, xMagnitude);
     yMagnitude = Math.copySign(yMagnitude * yMagnitude, yMagnitude);
@@ -615,7 +615,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public void setTargetRotation(Rotation2d desiredRotation) {
     setWantedState(WantedState.ROTATION_LOCK);
-    this.desiredRotationForRotationLockState = desiredRotation;
+    if (desiredRotation.getDegrees() >= 180) {
+      this.desiredRotationForRotationLockState = desiredRotation.minus(Rotation2d.fromDegrees(180));
+    }
+    this.desiredRotationForRotationLockState = desiredRotation.plus(Rotation2d.fromDegrees(180));
   }
 
   public boolean isAtDriveToPointSetpoint() {

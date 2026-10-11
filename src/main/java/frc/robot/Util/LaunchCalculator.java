@@ -196,10 +196,7 @@ public class LaunchCalculator {
   }
 
   public ShooterMeasurables getParameters(Vision vision) {
-    boolean passing =
-        AllianceFlipUtil.applyX(
-                Robotstate.getInstance().getRobotPoseFromSwerveDriveOdometry().getX())
-            > FieldConstants.LinesVertical.hubCenter;
+    boolean passing = false;
     if (latestMeasurables != null) {
       return latestMeasurables;
     }
@@ -216,9 +213,7 @@ public class LaunchCalculator {
 
     // Calculate target
     Translation2d target =
-        passing
-            ? getPassingTarget()
-            : AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint.toTranslation2d());
+        AllianceFlipUtil.apply(FieldConstants.Hub.topCenterPoint.toTranslation2d());
     Pose2d launcherPosition =
         estimatedPose.transformBy(
             new Transform2d(
@@ -233,7 +228,7 @@ public class LaunchCalculator {
 
     // Calculate field relative launcher velocity
     var robotVelocity = Robotstate.getInstance().getRobotChassisSpeeds();
-    var robotAngle = Robotstate.getInstance().getRobotPoseFromSwerveDriveOdometry().getRotation();
+    var robotAngle = vision.getLocation().getRotation();
     ChassisSpeeds launcherVelocity =
         DriverStation.isAutonomous()
             ? robotVelocity
@@ -327,7 +322,13 @@ public class LaunchCalculator {
     Logger.recordOutput("LaunchCalculator/LookaheadPose", lookaheadRobotPose);
     Logger.recordOutput(
         "LaunchCalculator/LauncherToTargetDistance", lookaheadLauncherToTargetDistance);
-
+    Logger.recordOutput("LaunchCalculator/Passing", passing);
+    Logger.recordOutput("LaunchCalculator/RawRobotX", vision.getLocation().getX());
+    Logger.recordOutput(
+        "LaunchCalculator/AllianceFlippedRobotX",
+        AllianceFlipUtil.applyX(vision.getLocation().getX()));
+    Logger.recordOutput("LaunchCalculator/HubCenterX", FieldConstants.LinesVertical.hubCenter);
+    Logger.recordOutput("LaunchCalculator/AllianceColor", DriverStation.getAlliance().get());
     return latestMeasurables;
   }
 

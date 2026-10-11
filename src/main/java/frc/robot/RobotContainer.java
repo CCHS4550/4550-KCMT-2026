@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Config.BruinRobotConfig;
 import frc.robot.Subsystems.Drive.SwerveIOCTRE;
 import frc.robot.Subsystems.Drive.SwerveSubsystem;
-import frc.robot.Subsystems.Drive.SwerveSubsystem.WantedState;
 import frc.robot.Subsystems.Indexer.Indexer;
 import frc.robot.Subsystems.Indexer.Indexer.IndexerWantedState;
 import frc.robot.Subsystems.Indexer.IndexerIOCTRE;
@@ -80,8 +79,12 @@ public class RobotContainer {
 
     controller
         .x()
-        .onTrue(new InstantCommand(()-> superstructure.setWantedSuperstructureState(WantedSuperstructureState.ZERO)))
-        .onFalse(new InstantCommand(()-> superstructure.setWantedSuperstructureState(WantedSuperstructureState.IDLE)));
+        .onTrue(
+            new InstantCommand(
+                () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.ZERO)))
+        .onFalse(
+            new InstantCommand(
+                () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.IDLE)));
 
     controller
         .leftTrigger()
@@ -116,11 +119,10 @@ public class RobotContainer {
         .leftBumper()
         .onTrue(
             new InstantCommand(
-                () ->
-                    swerveSubsystem.setTargetRotation(
-                        LaunchCalculator.getInstance().getParameters(vision).getDriveAngle())))
+                () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.ZERO)))
         .onFalse(
-            new InstantCommand(() -> swerveSubsystem.setWantedState(WantedState.TELEOP_DRIVE)));
+            new InstantCommand(
+                () -> superstructure.setWantedSuperstructureState(WantedSuperstructureState.IDLE)));
 
     controller
         .b()

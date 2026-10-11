@@ -136,7 +136,6 @@ public class Superstructure extends SubsystemBase {
         }
 
         if (shooter.atSetpoint() && swerveSubsystem.isAtDesiredRotation()) {
-          indexer.setWantedState(IndexerWantedState.RUNNING);
           intake.setWantedIntakeState(WantedIntakeState.PUMPING);
         }
         break;
