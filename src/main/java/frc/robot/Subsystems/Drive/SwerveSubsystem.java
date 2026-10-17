@@ -19,6 +19,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -27,6 +28,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constant.Constants;
 import frc.robot.Constant.FieldConstants;
 import frc.robot.Robotstate;
+import frc.robot.Subsystems.Vision.Vision;
 import frc.robot.Util.SubsystemDataProcessor;
 import frc.robot.Util.SysIdMechanism;
 import java.util.Optional;
@@ -48,6 +50,8 @@ public class SwerveSubsystem extends SubsystemBase {
   public static final double DRIVE_TO_POINT_STATIC_FRICTION_CONSTANT = 0.02;
 
   public static final double ROTATION_ERROR_MARGIN_FOR_ROTATION_LOCK_DEGREES = 10.0;
+
+  private Vision vision;
 
   public double maxVelocityOutputForDriveToPoint = Units.feetToMeters(10.0);
 
@@ -106,8 +110,8 @@ public class SwerveSubsystem extends SubsystemBase {
   private final double maxVelocity;
   private final double maxAngularVelocity;
 
-  private double teleopVelocityCoefficient = 1.0;
-  private double rotationVelocityCoefficient = 1.0;
+  private double teleopVelocityCoefficient = 1.4;
+  private double rotationVelocityCoefficient = 1.4;
   private double maximumAngularVelocityForDriveToPoint = Double.NaN;
 
   private SysIdRoutine wheelRadiuSysIdRoutine =
@@ -373,7 +377,7 @@ public class SwerveSubsystem extends SubsystemBase {
         double ff = 0.5; // example
         double ffDirection = Math.signum(error) * ff;
 
-        double kP = 0.3;
+        double kP = 0.4;
         if (error > 3.075 || error < -3.075) {
           kP = 0.0;
           ffDirection = 0.0;
@@ -557,7 +561,7 @@ public class SwerveSubsystem extends SubsystemBase {
     double yMagnitude =
         flipControls * MathUtil.applyDeadband(controller.getLeftX(), CONTROLLER_DEADBAND);
     double angularMagnitude =
-        flipControls * MathUtil.applyDeadband(controller.getRightX(), CONTROLLER_DEADBAND);
+        -1 * MathUtil.applyDeadband(controller.getRightX(), CONTROLLER_DEADBAND);
 
     xMagnitude = Math.copySign(xMagnitude * xMagnitude, xMagnitude);
     yMagnitude = Math.copySign(yMagnitude * yMagnitude, yMagnitude);
@@ -584,6 +588,10 @@ public class SwerveSubsystem extends SubsystemBase {
         swerveInputs.Pose.getRotation().plus(skewCompensationFactor));
   }
 
+  public void setVision(Vision vision) {
+    this.vision = vision;
+  }
+
   public void resetTranslationAndRotation(Pose2d pose2d) {
     resetTranslation(pose2d);
     resetRotation(pose2d.getRotation());
@@ -607,7 +615,10 @@ public class SwerveSubsystem extends SubsystemBase {
 
   public void setTargetRotation(Rotation2d desiredRotation) {
     setWantedState(WantedState.ROTATION_LOCK);
-    this.desiredRotationForRotationLockState = desiredRotation;
+    if (desiredRotation.getDegrees() >= 180) {
+      this.desiredRotationForRotationLockState = desiredRotation.minus(Rotation2d.fromDegrees(180));
+    }
+    this.desiredRotationForRotationLockState = desiredRotation.plus(Rotation2d.fromDegrees(180));
   }
 
   public boolean isAtDriveToPointSetpoint() {
@@ -621,7 +632,7 @@ public class SwerveSubsystem extends SubsystemBase {
   }
 
   public boolean isAtDesiredRotation() {
-    return isAtDesiredRotation(Units.degreesToRadians(10.0));
+    return isAtDesiredRotation(Units.degreesToRadians(0.5));
   }
 
   public boolean isAtDesiredRotation(double tolerance) {
@@ -686,6 +697,19 @@ public class SwerveSubsystem extends SubsystemBase {
                 .getNorm());
     Logger.recordOutput("Choreo/DistanceFromEndpoint", distance);
     return distance;
+  }
+
+  public void resetPigeonOrientationForDriving() {
+    boolean isble = DriverStation.getAlliance().get() == Alliance.Blue;
+
+    vision
+        .getPoseEstimator()
+        .resetPosition(
+            getSwerveRotation(),
+            swerveInputs.ModulePositions,
+            new Pose2d(
+                vision.getLocation().getTranslation(),
+                isble ? new Rotation2d() : new Rotation2d().plus(Rotation2d.fromRadians(Math.PI))));
   }
 
   /** Adds a new timestamped vision measurement. */

@@ -52,8 +52,13 @@ public class Superstructure extends SubsystemBase {
     // Log launching parameters TODO: fix logging bugs later
     var launchCalculator = LaunchCalculator.getInstance();
 
+    if (DriverStation.isDisabled()) {
+      setWantedSuperstructureState(WantedSuperstructureState.IDLE);
+    }
+
     shooterCalcs = launchCalculator.getParameters(vision);
     shooter.setShooterMeasurables(shooterCalcs);
+    shooter.setIndexerStatorCurrent(indexer.getStatorCurrent());
 
     systemState = handleStateTransitions();
     applyStates();
@@ -124,12 +129,14 @@ public class Superstructure extends SubsystemBase {
 
       case SHOOT:
         swerveSubsystem.setTargetRotation(shooterCalcs.getDriveAngle());
-        intake.setWantedIntakeState(WantedIntakeState.PUMPING);
 
-        shooter.setWantedState(ShooterWantedState.ACTIVE_SHOOT);
+        if (swerveSubsystem.isAtDesiredRotation()) {
 
-        if (shooter.atSetpoint()) {
-          indexer.setWantedState(IndexerWantedState.RUNNING);
+          shooter.setWantedState(ShooterWantedState.ACTIVE_SHOOT);
+        }
+
+        if (shooter.atSetpoint() && swerveSubsystem.isAtDesiredRotation()) {
+          intake.setWantedIntakeState(WantedIntakeState.PUMPING);
         }
         break;
 
@@ -145,9 +152,9 @@ public class Superstructure extends SubsystemBase {
   }
 
   private SystemState handleStateTransitions() {
-    if (wantedState1 == WantedSuperstructureState.SHOOT && !shooterCalcs.getIsValid()) {
-      return SystemState.IDLE;
-    }
+    // if (wantedState1 == WantedSuperstructureState.SHOOT && !shooterCalcs.getIsValid()) {
+    //   return SystemState.IDLE;
+    // }
 
     switch (wantedState1) {
       case IDLE:
@@ -159,6 +166,7 @@ public class Superstructure extends SubsystemBase {
 
       case INTAKING:
         return SystemState.INTAKING;
+
       case SHOOT:
         return SystemState.SHOOT;
 

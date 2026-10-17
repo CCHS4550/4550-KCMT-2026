@@ -3,10 +3,13 @@ package frc.robot.Subsystems.Shooter;
 import static edu.wpi.first.units.Units.*;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constant.Constants;
 import frc.robot.Subsystems.Shooter.Elevation.ElevationIO;
 import frc.robot.Subsystems.Shooter.Elevation.ElevationIOInputsAutoLogged;
 import frc.robot.Subsystems.Shooter.Flywheel.FlywheelIO;
@@ -29,6 +32,12 @@ public class Shooter extends SubsystemBase {
   private FlywheelIOInputsAutoLogged flywheelInputs = new FlywheelIOInputsAutoLogged();
 
   private boolean atGoal;
+
+  private double indexerStatorCurrent = 0.0;
+  private double indexerBasedFeedForward = 0.0;
+
+  private final LinearFilter indexerCurrentFilter = LinearFilter.singlePoleIIR(0.1, 0.02);
+  private final Debouncer indexerDebouncer = new Debouncer(0.2, Debouncer.DebounceType.kRising);
 
   private ShooterMeasurables wantedShooterMeasurables;
 
@@ -67,6 +76,7 @@ public class Shooter extends SubsystemBase {
 
     Logger.processInputs("Subsystems/Shooter/Flywheel", flywheelInputs);
     Logger.processInputs("Subsystems/Shooter/Elevation", elevationInputs);
+    Logger.recordOutput("Subsystems/Shooter/Indexer FF", calculateIndexerFeedForward());
 
     // System.out.println("wanted=" + wantedState + " current=" + systemState);
 
@@ -100,8 +110,8 @@ public class Shooter extends SubsystemBase {
         setFlywheelSpeed(RadiansPerSecond.of(wantedShooterMeasurables.getFlywheelSpeed()));
         break;
       case ZERO:
-        flywheelIO.setVelo(RadiansPerSecond.of(250));
-        // elevationIO.setElevationAngle(new Rotation2d(Degrees.of(70)));
+        flywheelIO.setVelo(RadiansPerSecond.of(280), calculateIndexerFeedForward());
+        elevationIO.setElevationAngle(new Rotation2d(Degrees.of(75)));
         break;
     }
   }
@@ -111,7 +121,7 @@ public class Shooter extends SubsystemBase {
   }
 
   private void setFlywheelSpeed(AngularVelocity velo) {
-    flywheelIO.setVelo(velo);
+    flywheelIO.setVelo(velo, calculateIndexerFeedForward());
   }
 
   public void setShooterMeasurables(ShooterMeasurables shooterMeasurables) {
@@ -126,12 +136,34 @@ public class Shooter extends SubsystemBase {
     return systemState;
   }
 
+  public void setIndexerStatorCurrent(double current) {
+    indexerStatorCurrent = current;
+  }
+
+  private double calculateIndexerFeedForward() {
+    double filteredCurrent = indexerCurrentFilter.calculate(indexerStatorCurrent);
+
+    boolean indexerLoaded =
+        indexerDebouncer.calculate(
+            filteredCurrent > Constants.ShooterConstants.INDEXER_CURRENT_THRESHOLD);
+
+    if (filteredCurrent <= Constants.ShooterConstants.INDEXER_CURRENT_THRESHOLD || !indexerLoaded) {
+      return 0.0;
+    }
+
+    double feedForward =
+        (filteredCurrent - Constants.ShooterConstants.INDEXER_CURRENT_THRESHOLD)
+            * Constants.ShooterConstants.INDEXER_CURRENT_TO_FF;
+
+    return Math.min(feedForward, Constants.ShooterConstants.INDEXER_FEED_FORWARD_MAX);
+  }
+
   public boolean atSetpoint() {
     return MathUtil.isNear(
             flywheelInputs.flywheelVelocityRadPerSec,
             wantedShooterMeasurables.getFlywheelSpeed(),
             wantedShooterMeasurables.getFlywheelSpeed()
-                * 0.05) // Allowance is 5% of wanted velocity
+                * 0.02) // Allowance is 5% of wanted velocity
         && MathUtil.isNear(
             elevationInputs.elevationAngle.getRadians(),
             wantedShooterMeasurables.getHoodAngle(),
